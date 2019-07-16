@@ -1,0 +1,6 @@
+.db
+node_modules
+.sass-cache/*
+.DS_STORE
+combined.log
+error.log
