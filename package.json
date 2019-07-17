@@ -1,0 +1,30 @@
+{
+  "name": "topbot",
+  "version": "0.0.1",
+  "description": "This bot will launch and manage tasks",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "lint": "eslint . --ext .js --fix || true"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.4",
+    "body-parser": "^1.15.2",
+    "botkit": "^0.7.0",
+    "botkit-storage-mongo": "^1.0.6",
+    "config": "^3.1.0",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.14.0",
+    "express-hbs": "^1.0.4",
+    "node-env-file": "^0.1.8",
+    "raw-body": "^2.3.3",
+    "request": "^2.79.0",
+    "uuid": "^3.3.2",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0"
+  },
+  "author": "Topcoder",
+  "license": "MIT"
+}
