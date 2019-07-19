@@ -1,0 +1,7 @@
+version: '3'
+services:
+  topbot:
+    image: topbot:latest
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
