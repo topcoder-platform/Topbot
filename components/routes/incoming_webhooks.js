@@ -1,7 +1,8 @@
 const crypto = require('crypto')
+const config = require('config')
 
 module.exports = function (webserver, controller) {
-  webserver.post('/slack/receive', async (req, res) => {
+  webserver.post(config.get('API_PREFIX') + '/slack/receive', async (req, res) => {
     // Verify that the request is from slack
     // Documentation: https://api.slack.com/docs/verifying-requests-from-slack
     // Tutorial for node: https://medium.com/@rajat_sriv/verifying-requests-from-slack-using-node-js-69a8b771b704

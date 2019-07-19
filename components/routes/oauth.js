@@ -1,5 +1,6 @@
 const util = require('util')
 const logger = require('../../common/logger')
+const config = require('config')
 
 module.exports = function (webserver, controller) {
   const handler = {
@@ -22,7 +23,7 @@ module.exports = function (webserver, controller) {
 
         if (err) {
           logger.error(util.inspect(err))
-          return res.redirect('/login_error.html')
+          return res.redirect(config.get('API_PREFIX') + '/login_error.html')
         }
 
         // use the token we got from the oauth
@@ -32,7 +33,7 @@ module.exports = function (webserver, controller) {
 
           if (err) {
             logger.error(util.inspect(err))
-            return res.redirect('/login_error.html')
+            return res.redirect(config.get('API_PREFIX') + '/login_error.html')
           }
 
           // Now we've got all we need to connect to this user's team
@@ -49,7 +50,7 @@ module.exports = function (webserver, controller) {
 
           res.cookie('team_id', auth.team_id)
           res.cookie('bot_user_id', auth.bot.bot_user_id)
-          res.redirect('/login_success.html')
+          res.redirect(config.get('API_PREFIX') + '/login_success.html')
         })
       })
     }
@@ -57,13 +58,13 @@ module.exports = function (webserver, controller) {
 
   // Create a /login link
   // This link will send user's off to Slack to authorize the app
-  webserver.get('/login', handler.login)
+  webserver.get(config.get('API_PREFIX') + '/login', handler.login)
 
   // Create a /oauth link
   // This is the link that receives the postback from Slack's oauth system
   // So in Slack's config, under oauth redirect urls,
   // your value should be https://<my custom domain or IP>/oauth
-  webserver.get('/oauth', handler.oauth)
+  webserver.get(config.get('API_PREFIX') + '/oauth', handler.oauth)
 
   return handler
 }

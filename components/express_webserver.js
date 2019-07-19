@@ -4,6 +4,8 @@ var cookieParser = require('cookie-parser')
 var http = require('http')
 var hbs = require('express-hbs')
 const logger = require('../common/logger')
+const config = require('config')
+
 
 module.exports = function (controller) {
   var webserver = express()
@@ -25,7 +27,7 @@ module.exports = function (controller) {
   webserver.set('view engine', 'hbs')
   webserver.set('views', __dirname + '/../views/')
 
-  webserver.use(express.static('public'))
+  webserver.use(config.get('API_PREFIX'), express.static('public'))
 
   var server = http.createServer(webserver)
 

@@ -1,6 +1,8 @@
 global.Promise = require('bluebird')
 const env = require('node-env-file')
 const Botkit = require('botkit')
+const config = require('config')
+
 
 env(__dirname + '/.env')
 
@@ -26,11 +28,11 @@ controller.startTicking()
 // Set up an Express-powered webserver to expose oauth and webhook endpoints
 const webserver = require(__dirname + '/components/express_webserver.js')(controller)
 
-webserver.get('/health', function (req, res) {
+webserver.get(config.get('API_PREFIX') + '/health', function (req, res) {
   res.end(200);
 });
 
-webserver.get('/', function (req, res) {
+webserver.get(config.get('API_PREFIX') + '/', function (req, res) {
   res.render('index', {
     domain: req.get('host'),
     protocol: req.protocol,
