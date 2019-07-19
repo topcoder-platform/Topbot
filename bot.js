@@ -29,7 +29,7 @@ controller.startTicking()
 const webserver = require(__dirname + '/components/express_webserver.js')(controller)
 
 webserver.get(config.get('API_PREFIX') + '/health', function (req, res) {
-  res.end(200);
+  res.json({ok:true});
 });
 
 webserver.get(config.get('API_PREFIX') + '/', function (req, res) {
