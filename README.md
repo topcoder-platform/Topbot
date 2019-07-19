@@ -1,6 +1,6 @@
 # TopBot
 
-## Testing directly on Slack
+## Testing directly on Slack 
 
 I have deployed the bot to an ec2 nano instance. You can test it directly without any additional setup
 
