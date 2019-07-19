@@ -1,7 +1,7 @@
 module.exports = {
-  TEAM_TO_POST: '', //The id of the team where your requests and tasks will be posted
-  CHANNEL_TO_POST: '', // The id of the channel to post requests
-  CHANNEL_TO_POST_TASKS: '', // The name of the channel to post launched tasks 
+  TEAM_TO_POST: proc.env.TEAM_TO_POST || '', //The id of the team where your requests and tasks will be posted
+  CHANNEL_TO_POST: proc.env.CHANNEL_TO_POST || '', // The id of the channel to post requests
+  CHANNEL_TO_POST_TASKS: proc.env.CHANNEL_TO_POST_TASKS || '', // The name of the channel to post launched tasks 
   COMMANDS: { // List of supported commands
     LAUNCH: 'launch',
     ACCEPT: 'accept',
