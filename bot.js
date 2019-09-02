@@ -23,7 +23,7 @@ const adapter = new SlackAdapter({
   clientSecret: process.env.clientSecret,
   clientSigningSecret: process.env.clientSigningSecret,
   scopes: ['bot', 'chat:write:bot', 'channels:write'],
-  redirectUri: process.env.uri + config.get('API_PREFIX') + '/oauth',
+  redirectUri: process.env.API_URL + config.get('API_PREFIX') + '/oauth',
   getTokenForTeam: async (teamId) => { // Get token for team
     let token = await mongoStorage.teams.get(teamId, function (err, team) {
       if (err) return logger.error('Team not found in databsae', teamId)
