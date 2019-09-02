@@ -69,7 +69,7 @@ workflows:
           filters:
             branches:
               only:
-                - dev
+                - [ dev, feature/botkit_version_upgrade_to_v4 ]
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.
