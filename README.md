@@ -1,42 +1,89 @@
 # TopBot
+## Local setup
 
-## Testing directly on Slack 
+### Prerequisites
 
-I have deployed the bot to an ec2 nano instance. You can test it directly without any additional setup
+1. Node.js v10.14.2 or higher. Download link: https://nodejs.org/en/download/
 
-1. Sign into `topbot-workspace.slack.com` using `dmessinger@topcoder.com`. This user has already been invited to the workspace.
+2. ngrok. Download link: https://ngrok.com/download
 
-2. You will need another user for testing. Invite another user by clicking the `Invite people` button. Sign into `topbot-workspace.slack.com` with that user on a different browser. Let's call this user `testuser@topcoder.com`. Now go back to `dmessinger@topcoder.com` account.
+3. Slack account
 
-3. By default, all launched task messages are posted to `#tasks`
+4. Mongodb community edition. Download link: https://www.mongodb.com/download-center/community
 
-4. Create a new channel for testing, say `#test`
+### How to run
 
-  ![](docs/images/create_channel.png)
+1. Start ngrok and obtain a https url. `./ngrok http 3000`.
 
-5. Invite the bot, `/invite @topbot`. You will see a welcome message in `#test`. The bot is also automatically added to the `#tasks` channel if it is not already a member. You will see a welcome message on `#tasks` if it is a fresh add. This is to notify all members of `#tasks` who are not a part of `#test` that a bot is availabe.
+2. Make sure you have `/data/db` directory created with write access to current user. Start mongodb `mongod`. Create a database, say `topbot`.
+
+3. Login to slack and create a channel to post tasks to. Update the name of this channel in `config/default.js -> CHANNEL_TO_POST_TASKS` (make sure to include the '#')
+
+4. The instructions here, https://botkit.ai/docs/provisioning/slack-events-api.html are really comprehensive. You can follow steps 1 to 6 and ignore step 2. 
+In step 3 (Configure OAuth), make sure to add the `channels.write` scope and click `Save changes`.
+In steps 5 and 6 add your api prefix (found in `config/default.js -> API_PREFIX`) before `/slack/receive`. Your URL should look like this
+``https://YOURURL/v5/topbot/slack/receive`` 
+
+  ![](docs/images/add_scope.png)
+
+5. Before step 7, go to the `Basic information` tab of your app. Collect these values from `App credentials` section, `Client id`, `Client secret`, `Signing Secret`.
+
+  ![](docs/images/app_credentials.png)
+
+6. Update `.env` file with the information from above steps.
+
+   ![](docs/images/env.png) 
+
+7. Start your node app. `npm i` followed by `npm start`.
+
+8. Now follow step 7. i.e open the ngrok url on a browser.
+
+9.  On the home page of the `ngrok` url, click `Add to Slack`.
+
+  ![](docs/images/add_to_slack.png)
+
+10. Click `Authorize` on the next page.
+
+  ![](docs/images/authorize.png)
+
+11. You will recieve a bot added message.
+
+  ![](docs/images/bot_added.png)
+
+12. **IMPORTANT** Before proceeding further, go to the `OAuth and permissions` page of you bot. (From step 3, Configure OAuth). You will see a banner saying permissions have changed. Reinstall the app by clicking `click here`. Authorize on the following page.
+
+  ![](docs/images/reinstall_bot.png)
+
+  ![](docs/images/authorize_again.png)
+
+13. Now you can follow "Testing" section .
+
+## Testing
+
+1. Invite the bot, `/invite @topbot`. You will see a welcome message in your channel. The bot is also automatically added to the channel for tasks if it is not already a member.
+You will see a welcome message on tasks channel if it is a fresh add. This is to notify all members of task channel who are not a part of main channel that a bot is availabe.
    
    ![](docs/images/invite_topbot.png) 
 
-6. Issue `help` command, `@topbot help`. You will see a list of commands supported by the bot.
+2. Issue `help` command, `@topbot help`. You will see a list of commands supported by the bot.
    
    ![](docs/images/help_command.png) 
 
-7. Launch a task. `@topbot launch Horizon - Create New Project Mock API Integration - Part 2`. You will see a message posted in `#tasks`
+3. Launch a task. `@topbot launch Horizon - Create New Project Mock API Integration - Part 2`. You will see a message posted in channel that you selected before
    
    ![](docs/images/launch_task.png) 
 
-8. Accept this task as `testuser@topcoder.com` by clicking the `Start a thread` and then reply `@topcoder accept`
+4. Accept this task as another user by clicking the `Start a thread` and then reply `@topcoder accept`
    
    ![](docs/images/start_a_thread.png)
    
    ![](docs/images/accept_task.png) 
 
-9.  A new channel will be created with the name `<first_15_characters of task description>__<taskUUid>`. The uuid is added to avoid conflicts incase two tasks have similar descriptions. Slack limits channel names to 21 characters.
+5.  A new channel will be created with the name `<first_15_characters of task description>__<taskUUid>`. The uuid is added to avoid conflicts incase two tasks have similar descriptions. Slack limits channel names to 21 characters.
   
-  The channel will have two users, `dmessinger@topcoder.com` and `testuser@topcoder.com`. The bot will also automatically be added.
+  The channel will have two users, task's launcher and person who accepted this task. The bot will also automatically be added.
 
-10. As `dmessinger@topcoder.com`, approve the task inside the newly created channel. `@topbot approve`. You will see a confirmation message.
+6. As task's launcher, approve the task inside the newly created channel. `@topbot approve`. You will see a confirmation message.
  
     ![](docs/images/approve_task.png)  
 
@@ -74,63 +121,7 @@ There are several error scenarios which the bot handles. These are,
 8. `approve` task which is already approved as a launcher
 
     ![](docs/images/second_approve.png)
-
-## Local setup
-
-### Prerequisites
-
-1. Node.js v10.14.2 or higher. Download link: https://nodejs.org/en/download/
-
-2. ngrok. Download link: https://ngrok.com/download
-
-3. Slack account
-
-4. Mongodb community edition. Download link: https://www.mongodb.com/download-center/community
-
-### How to run
-
-1. Start ngrok and obtain a https url. `./ngrok http 3000`.
-
-2. Make sure you have `/data/db` directory created with write access to current user. Start mongodb `mongod`. Create a database, say `topbot`.
-
-3. Login to slack and create a channel to post tasks to. Update the name of this channel in `config/default.js -> CHANNEL_TO_POST_TASKS` (make sure to include the '#')
-
-4. The instructions here, https://botkit.ai/docs/provisioning/slack-events-api.html are really comprehensive. You can follow steps 1 to 6 and ignore step 2. The only change is, in step 3 (Configure OAuth), make sure to add the `channels.write` scope and click `Save changes`.
-
-  ![](docs/images/add_scope.png)
-
-5. Before step 7, go to the `Basic information` tab of your app. Collect these values from `App credentials` section, `Client id`, `Client secret`, `Signing Secret`.
-
-  ![](docs/images/app_credentials.png)
-
-6. Update `.env` file with the information from above steps.
-
-   ![](docs/images/env.png) 
-
-7. Start your node app. `npm i` followed by `npm start`.
-
-8. Now follow step 7. i.e open the ngrok url on a browser.
-
-9.  On the home page of the `ngrok` url, click `Add to Slack`.
-
-  ![](docs/images/add_to_slack.png)
-
-10. Click `Authorize` on the next page.
-
-  ![](docs/images/authorize.png)
-
-11. You will recieve a bot added message.
-
-  ![](docs/images/bot_added.png)
-
-12. **IMPORTANT** Before proceeding further, go to the `OAuth and permissions` page of you bot. (From step 3, Configure OAuth). You will see a banner saying permissions have changed. Reinstall the app by clicking `click here`. Authorize on the following page.
-
-  ![](docs/images/reinstall_bot.png)
-
-  ![](docs/images/authorize_again.png)
-
-13. Now you can follow the same steps as in "Testing directly on Slack".
-
+    
 ### App comfiguration
 
 Configuration is defined in `config/default.js`. The comments there explain each field.
@@ -147,5 +138,3 @@ Run `npm run lint`
 2. Logs are written to files, `combined.log` for all logs and `error.log` for errors by winston.
 
 3. Tasks are created in the `tasks` collection in MongoDB.
-
-4. `npm audit` shows one vulnerability. Installing the fix is a major dependency update which might break features of botkit as it was a dependency that was installed by botkit. So I have not updated it.

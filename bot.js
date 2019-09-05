@@ -1,8 +1,11 @@
 global.Promise = require('bluebird')
 const env = require('node-env-file')
-const Botkit = require('botkit')
+const {Botkit}= require('botkit')
 const config = require('config')
-
+const { SlackAdapter, SlackMessageTypeMiddleware, SlackEventMiddleware } = require('botbuilder-adapter-slack');
+const logger = require('./common/logger')
+var express = require('express')
+var hbs = require('express-hbs')
 
 env(__dirname + '/.env')
 
@@ -10,29 +13,57 @@ if (!process.env.clientId || !process.env.clientSecret || !process.env.MONGO_URI
   usage_tip()
   process.exit(1)
 }
-
-const bot_options = {
-  clientId: process.env.clientId,
-  clientSecret: process.env.clientSecret,
-  clientSigningSecret: process.env.clientSigningSecret,
-  scopes: ['bot', 'chat:write:bot']
-}
-
 const mongoStorage = require('botkit-storage-mongo')({
   mongoUri: process.env.MONGO_URI,
   tables: ['tasks']
 })
-bot_options.storage = mongoStorage
-const controller = Botkit.slackbot(bot_options)
-controller.startTicking()
-// Set up an Express-powered webserver to expose oauth and webhook endpoints
-const webserver = require(__dirname + '/components/express_webserver.js')(controller)
+// Create adapter for slack with all required variables
+const adapter = new SlackAdapter({
+  clientId: process.env.clientId,
+  clientSecret: process.env.clientSecret,
+  clientSigningSecret: process.env.clientSigningSecret,
+  scopes: ['bot', 'chat:write:bot', 'channels:write'],
+  redirectUri: process.env.API_URL + config.get('API_PREFIX') + '/oauth',
+  getTokenForTeam: async (teamId) => { // Get token for team
+    let token = await mongoStorage.teams.get(teamId, function (err, team) {
+      if (err) return logger.error('Team not found in databsae', teamId)
+      return team
+    })
+    if (!token || !token.bot.token) return 
+    return token.bot.token
+  },
+  getBotUserByTeam: async (teamId) => { // Get bot user for team
+    let token = await mongoStorage.teams.get(teamId, function (err, team) {
+      if (err) return logger.error('Team not found in databsae', teamId)
+      return team
+    })
+    if (!token || !token.bot.user_id) return 
+    return token.bot.user_id
+  }
+})
+// Use SlackEventMiddleware to emit events that match their original Slack event types.
+adapter.use(new SlackEventMiddleware());
 
-webserver.get(config.get('API_PREFIX') + '/health', function (req, res) {
+// Use SlackMessageType middleware to further classify messages as direct_message, direct_mention, or mention
+adapter.use(new SlackMessageTypeMiddleware());
+
+const controller = new Botkit({
+  adapter,
+  webhook_uri: config.get('API_PREFIX') + '/slack/'
+})
+// Add mongo database as controller's extension
+controller.addPluginExtension('database', mongoStorage)
+// set up handlebars ready for tabs
+controller.webserver.engine('hbs', hbs.express4({ partialsDir: __dirname + '/views/partials' }))
+controller.webserver.set('view engine', 'hbs')
+controller.webserver.set('views', __dirname + '/views/')
+controller.webserver.use(config.get('API_PREFIX'), express.static('public'))
+// Set up health check and root route
+controller.webserver.get(config.get('API_PREFIX') + '/health', function (req, res) {
   res.json({ok:true});
 });
 
-webserver.get(config.get('API_PREFIX') + '/', function (req, res) {
+controller.webserver.get(config.get('API_PREFIX') + '/', function (req, res) {
   res.render('index', {
     domain: req.get('host'),
     protocol: req.protocol,
@@ -40,7 +71,11 @@ webserver.get(config.get('API_PREFIX') + '/', function (req, res) {
     layout: 'layouts/default'
   })
 })
-
+// import all the pre-defined routes that are present in /components/routes
+var normalizedPath = require('path').join(__dirname, 'components', 'routes')
+require('fs').readdirSync(normalizedPath).forEach(function (file) {
+  controller.webserver.use(require('./components/routes/' + file)(controller))
+})
 // Set up a simple storage backend for keeping a record of customers
 // who sign up for the app via the oauth
 require(__dirname + '/components/user_registration.js')(controller)
@@ -49,8 +84,9 @@ require(__dirname + '/components/user_registration.js')(controller)
 require(__dirname + '/components/onboarding.js')(controller)
 
 var normalizedPath = require('path').join(__dirname, 'skills')
-require('fs').readdirSync(normalizedPath).forEach(function (file) {
-  require('./skills/' + file)(controller)
+// When controller is ready, load all slack's skills
+controller.ready(() => {
+  controller.loadModules(__dirname + '/skills')
 })
 
 function usage_tip() {

@@ -1,3 +1,4 @@
+require('node-env-file')('.env')
 module.exports = {
   TEAM_TO_POST: process.env.TEAM_TO_POST || '', //The id of the team where your requests and tasks will be posted
   CHANNEL_TO_POST: process.env.CHANNEL_TO_POST || '', // The id of the channel to post requests
