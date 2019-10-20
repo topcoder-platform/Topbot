@@ -1,0 +1,91 @@
+swagger: "2.0"
+info:
+  description: "REST API definitions for Topbot Central TC Lambda"
+  version: "1.0.0"
+  title: "Topbot - Central TC Lambda"
+host: "localhost:3000"
+tags:
+- name: "launch"
+  description: "Launch a task with description"
+schemes:
+- "http"
+paths:
+  /launch:
+    post:
+      tags:
+      - "launch"
+      summary: "Launch a task with description"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Task object"
+        required: true
+        schema:
+          $ref: "#/definitions/CreateTask"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Task"
+        400:
+          description: "Bad request"
+        500:
+          description: "Internal Server Error"
+  /slack/receive:
+    post:
+      tags:
+      - "launch"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      summary: "Endpoint for Slack events. Slack posts command requests to this endpoint. It is meant to be used only through Slack. Do not 'Try it out'"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "object"
+            required: 
+            - "challenge"
+            properties:
+              challenge:
+                type: "string"
+                example: "983-58ac-475a-882e"
+        400:
+          description: "Bad request"
+        
+definitions:
+  Task:
+    type: "object"
+    properties:
+      id: 
+        type: "string"
+        example: "14c83983-58ac-475a-882e-101d47a0e4ec"
+      description:
+        type: "string"
+        example: "Create a slack bot"
+      launcher:
+        type: "string"
+        example: "UPK3WLVN0"
+      threadId:
+        type: "string"
+        example: "1571503221.013600"
+      status:
+        type: "string"
+        example: "LAUNCHED"
+  CreateTask:
+    type: "object"
+    required: 
+      - "description"
+      - "user"
+    properties:
+      description:
+        type: "string"
+        example: "Create a slack bot"
+      user:
+        type: "string"
+        example: "UPK3WLVN0"

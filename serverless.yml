@@ -1,0 +1,37 @@
+service: central_tc
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+
+  environment:
+    # AWS configuration
+    AWS_ACCESS_KEY_ID:
+    AWS_SECRET_ACCESS_KEY:
+    AWS_REGION:
+    DYNAMODB_ENDPOINT:
+    # TC Slack bot configuration
+    ADMIN_USER_TOKEN:
+    BOT_TOKEN:
+    CHANNEL:
+    CLIENT_SIGNING_SECRET:
+
+functions:
+  launch:
+    handler: src/functions/launch.handler
+    description: Launch a task with description
+    events:
+      - http:
+          path: launch
+          method: post
+  
+  events:
+    handler: src/functions/events.handler
+    description: Handles slack events
+    events:
+      - http:
+          path: slack/receive
+          method: post
+
+plugins:
+  - serverless-offline

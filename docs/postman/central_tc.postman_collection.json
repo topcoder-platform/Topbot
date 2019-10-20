@@ -1,0 +1,39 @@
+{
+	"info": {
+		"_postman_id": "33f8fd0b-dc0d-4619-864d-b84b7451ecf5",
+		"name": "central_tc",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Launch",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"description\": \"Create a slack bot\",\n\t\"user\": \"{{user}}\"\n}"
+				},
+				"url": {
+					"raw": "http://{{url}}/launch",
+					"protocol": "http",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"launch"
+					]
+				},
+				"description": "Launch a task with description"
+			},
+			"response": []
+		}
+	]
+}
