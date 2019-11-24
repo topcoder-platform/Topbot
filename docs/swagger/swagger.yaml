@@ -4,17 +4,14 @@ info:
   version: "1.0.0"
   title: "Topbot - Central TC Lambda"
 host: "localhost:3000"
-tags:
-- name: "launch"
-  description: "Launch a task with description"
 schemes:
 - "http"
 paths:
-  /launch:
+  /request:
     post:
       tags:
-      - "launch"
-      summary: "Launch a task with description"
+      - "Request a project with description"
+      summary: "Request a project with description"
       consumes:
       - "application/json"
       produces:
@@ -22,28 +19,112 @@ paths:
       parameters:
       - in: "body"
         name: "body"
-        description: "Task object"
+        description: "Project object"
         required: true
         schema:
-          $ref: "#/definitions/CreateTask"
+          $ref: "#/definitions/CreateProject"
       responses:
         200:
           description: "OK"
           schema:
-            $ref: "#/definitions/Task"
+            $ref: "#/definitions/Project"
         400:
           description: "Bad request"
         500:
           description: "Internal Server Error"
-  /slack/receive:
+  /accept:
     post:
       tags:
-      - "launch"
+      - "Accept a project"
+      summary: "Accept a project"
       consumes:
       - "application/json"
       produces:
       - "application/json"
-      summary: "Endpoint for Slack events. Slack posts command requests to this endpoint. It is meant to be used only through Slack. Do not 'Try it out'"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Project id"
+        required: true
+        schema:
+          type: "object"
+          properties:
+            projectId:
+              type: "string"
+              example: "14c83983-58ac-475a-882e-101d47a0e4ec"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad request"
+        500:
+          description: "Internal Server Error"
+  /decline:
+    post:
+      tags:
+      - "Decline a project"
+      summary: "Decline a project"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Project id"
+        required: true
+        schema:
+          type: "object"
+          properties:
+            projectId:
+              type: "string"
+              example: "14c83983-58ac-475a-882e-101d47a0e4ec"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad request"
+        500:
+          description: "Internal Server Error"
+  /invite:
+    post:
+      tags:
+      - "Invite email id to a project"
+      summary: "Invite email id to a project"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Project id and email id"
+        required: true
+        schema:
+          type: "object"
+          properties:
+            projectId:
+              type: "string"
+              example: "14c83983-58ac-475a-882e-101d47a0e4ec"
+            email:
+              type: "string"
+              example: "a@b.com"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad request"
+        500:
+          description: "Internal Server Error"
+  /slack/events:
+    post:
+      tags:
+      - "Slack events"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      summary: "Endpoint for Slack events. Slack posts command requests to this endpoint. It is meant to be used only through Slack."
       responses:
         200:
           description: "OK"
@@ -57,9 +138,23 @@ paths:
                 example: "983-58ac-475a-882e"
         400:
           description: "Bad request"
+  /slack/interactive:
+    post:
+      tags:
+      - "Slack interactive components"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      summary: "Endpoint for Slack interactive components. Interactive elements like button and dialogs post to this endpoint when an action is performed on them"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad request"
         
 definitions:
-  Task:
+  Project:
     type: "object"
     properties:
       id: 
@@ -68,24 +163,38 @@ definitions:
       description:
         type: "string"
         example: "Create a slack bot"
-      launcher:
+      requester:
         type: "string"
         example: "UPK3WLVN0"
-      threadId:
+      clientSlackThread:
         type: "string"
-        example: "1571503221.013600"
+        example: "1574566449.000200"
+      clientSlackChannel:
+        type: "string"
+        example: "CN34FJLDP"
+      tcSlackThread:
+        type: "string"
+        example: "1574566452.000100"
       status:
         type: "string"
         example: "LAUNCHED"
-  CreateTask:
+  CreateProject:
     type: "object"
     required: 
       - "description"
-      - "user"
+      - "requester"
+      - "clientSlackThread"
+      - "clientSlackChannel"
     properties:
       description:
         type: "string"
-        example: "Create a slack bot"
-      user:
+        example: "Create a bot"
+      requester:
         type: "string"
-        example: "UPK3WLVN0"
+        example: "Mayur"
+      clientSlackThread:
+        type: "string"
+        example: "1574566449.000200"
+      clientSlackChannel:
+        type: "string"
+        example: "CN34FJLDP"

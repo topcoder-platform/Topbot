@@ -6,23 +6,27 @@ provider:
 
   environment:
     # AWS configuration
-    AWS_ACCESS_KEY_ID:
-    AWS_SECRET_ACCESS_KEY:
-    AWS_REGION:
-    DYNAMODB_ENDPOINT:
+    AWS_ACCESS_KEY_ID: FAKE_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: FAKE_SECRET_ACCESS_KEY
+    AWS_REGION: FAKE_REGION
+    DYNAMODB_ENDPOINT: http://localhost:8000
+
     # TC Slack bot configuration
-    ADMIN_USER_TOKEN:
-    BOT_TOKEN:
-    CHANNEL:
-    CLIENT_SIGNING_SECRET:
+    ADMIN_USER_TOKEN: xoxp-755656631591-747386116513-845027266816-d23e940b8db6cdf381c3f03d05443c09
+    BOT_TOKEN: xoxb-755656631591-802800975089-TC4mAb9cnF0TE9K3ElSaSkVQ
+    CHANNEL: general
+    CLIENT_SIGNING_SECRET: 49162bd8ebe79a8f64a9a29332e22c74
+    
+    # Slack Lambda configuration
+    SLACK_LAMBDA_URI: 'http://localhost:3001'
 
 functions:
-  launch:
-    handler: src/functions/launch.handler
-    description: Launch a task with description
+  request:
+    handler: src/functions/request.handler
+    description: Create a project with description
     events:
       - http:
-          path: launch
+          path: request
           method: post
   
   events:
@@ -30,7 +34,39 @@ functions:
     description: Handles slack events
     events:
       - http:
-          path: slack/receive
+          path: slack/events
+          method: post
+
+  interactive:
+    handler: src/functions/interactive.handler
+    description: Handles slack interactive messages
+    events:
+      - http:
+          path: slack/interactive
+          method: post
+
+  accept:
+    handler: src/functions/accept.handler
+    description: Handles project accept
+    events:
+      - http:
+          path: accept
+          method: post
+
+  decline:
+    handler: src/functions/decline.handler
+    description: Handles project decline
+    events:
+      - http:
+          path: decline
+          method: post
+
+  invite:
+    handler: src/functions/invite.handler
+    description: Handles project invite
+    events:
+      - http:
+          path: invite
           method: post
 
 plugins:

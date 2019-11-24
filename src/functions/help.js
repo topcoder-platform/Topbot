@@ -25,31 +25,7 @@ module.exports.handler = async event => {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: '@topbot *launch* <description> : Launch a task with description'
-      }
-    }, {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: '@topbot *accept* : Accept a task'
-      }
-    }, {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: '@topbot *approve* : Approve a task'
-      }
-    }, {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
         text: '@topbot *help* : Show list of supported commands'
-      }
-    }, {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: '@topbot *request* <request> : Send request to the topcoder channel'
       }
     }
     ])

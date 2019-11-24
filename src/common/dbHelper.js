@@ -4,7 +4,7 @@
 
 const AWS = require('aws-sdk')
 const config = require('config')
-const tasksSchema = require('../tables/tasks')
+const projectsSchema = require('../tables/projects')
 let documentClient = null
 
 /**
@@ -21,8 +21,8 @@ async function initialize () {
   const dynamodb = new AWS.DynamoDB()
   // Create table if it does not exist already
   const list = await dynamodb.listTables().promise()
-  if (!list.TableNames.includes(config.get('DYNAMODB.TASK_TABLE_NAME'))) {
-    await dynamodb.createTable(tasksSchema).promise()
+  if (!list.TableNames.includes(config.get('DYNAMODB.PROJECT_TABLE_NAME'))) {
+    await dynamodb.createTable(projectsSchema).promise()
   }
 
   documentClient = new AWS.DynamoDB.DocumentClient()
@@ -64,8 +64,45 @@ async function update (params) {
   return documentClient.update(params).promise()
 }
 
+/**
+ * Updates project status
+ * @param {String} projectId
+ * @param {String} newStatus
+ */
+async function updateProjectStatus (projectId, newStatus) {
+  return update({
+    TableName: config.get('DYNAMODB.PROJECT_TABLE_NAME'),
+    Key: {
+      id: projectId
+    },
+    UpdateExpression: 'set #st = :s',
+    ExpressionAttributeValues: {
+      ':s': newStatus
+    },
+    ExpressionAttributeNames: {
+      '#st': 'status'
+    }
+  })
+}
+
+/**
+ * Get a project by id
+ * @param {String} projectId
+ */
+async function getProject (projectId) {
+  return ((await query({
+    TableName: config.get('DYNAMODB.PROJECT_TABLE_NAME'),
+    KeyConditionExpression: 'id = :idVal',
+    ExpressionAttributeValues: {
+      ':idVal': projectId
+    }
+  })).Items[0])
+}
+
 module.exports = {
   put,
   query,
-  update
+  update,
+  updateProjectStatus,
+  getProject
 }

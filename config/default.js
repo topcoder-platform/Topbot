@@ -4,23 +4,32 @@
 
 module.exports = {
   // Status of a task during its lifetime
-  TASK_STATUS: {
+  PROJECT_STATUS: {
     LAUNCHED: 'LAUNCHED',
     ACCEPTED: 'ACCEPTED',
-    APPROVED: 'APPROVED'
+    DECLINED: 'DECLINED',
+    APPROVED: 'APPROVED',
+    RESPONDED: 'RESPONDED'
   },
   // Dynamodb table and index names
   DYNAMODB: {
-    TASK_TABLE_NAME: 'tasks',
-    THREADID_INDEX: 'threadid_index',
-    CHANNEL_INDEX: 'channel_index'
+    PROJECT_TABLE_NAME: 'projects',
+    CLIENT_SLACK_THREAD_INDEX: 'client_slack_thread_index'
   },
   // Supported commands received as events
   COMMANDS: {
-    ACCEPT: 'accept',
-    APPROVE: 'approve',
     HELP: 'help'
   },
+  // Names of interactive components
+  INTERACTIVE_MESSAGE_TYPES: {
+    POST_RESPONSE: 'postResponse',
+    TEXT_AREA_POST_RESPONSE: 'postResponseTextArea',
+    APPROVE: 'approve'
+  },
   // Winston log level
-  LOG_LEVEL: 'error'
+  LOG_LEVEL: 'error',
+  // Common constants
+  CONSTANTS: {
+    PROJECT_DOES_NOT_EXIST: 'Project does not exist'
+  }
 }

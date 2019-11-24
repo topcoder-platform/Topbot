@@ -1,5 +1,5 @@
 /**
- * Handler for accept a project
+ * Handler for POST /invite
  */
 
 const HttpStatus = require('http-status-codes')
@@ -13,8 +13,8 @@ const slackWebClient = getSlackWebClient()
 
 module.exports.handler = async event => {
   try {
-    // Validate schema
-    const { error, value } = schema.acceptSchema.validate(JSON.parse(event.body))
+    // Validate input
+    const { error, value } = schema.inviteSchema.validate(JSON.parse(event.body))
     if (error) {
       return {
         statusCode: HttpStatus.BAD_REQUEST,
@@ -22,10 +22,9 @@ module.exports.handler = async event => {
       }
     }
 
-    // Get project
     const project = await getProject(value.projectId)
 
-    // Check if valid
+    // Check if exists
     if (!project) {
       return {
         statusCode: HttpStatus.BAD_REQUEST,
@@ -35,26 +34,14 @@ module.exports.handler = async event => {
       }
     }
 
-    // Post accepted to TC Central
+    // Post to TC Slack
     await slackWebClient.chat.postMessage({
       thread_ts: project.tcSlackThread,
       channel: process.env.CHANNEL,
-      text: 'Great, the client accepted the project, please approve',
-      mrkdwn: true,
-      attachments: [
-        {
-          fallback: 'Click button to approve project',
-          callback_id: project.id,
-          attachment_type: 'default',
-          actions: [{
-            name: config.get('INTERACTIVE_MESSAGE_TYPES.APPROVE'),
-            text: 'Approve',
-            type: 'button'
-          }]
-        }]
+      text: `User with email ${value.email} has been successfully invited to the project`
     })
 
-    // Return OK
+    // Return OK to Slack lambda
     return {
       statusCode: HttpStatus.OK
     }

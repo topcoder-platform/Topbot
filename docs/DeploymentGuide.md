@@ -8,7 +8,9 @@
 
 Follow the below instructions in order to fully deploy the bot locally,
 
-## Dynamodb setup
+## Dynamodb setup 
+
+If you already have dynamodb running, then you can skip the install and run steps 1 and 2
 
 1. Download and install dynamodb from [here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.DownloadingAndRunning.html)
 
@@ -70,9 +72,9 @@ Follow the below instructions in order to fully deploy the bot locally,
 
 ![](images/allow.png)
 
-7. On the same page, go to `Scopes` -> `Select Permission Scopes` -> Add scope `channels.write` and click `Save changes`. Reinstall the app by clicking the link on the top banner.
+7. On the same page, go to `Scopes` -> `Select Permission Scopes` -> Add scope `bot` and `channels:write`  and click `Save changes`. Reinstall the app by clicking the link on the top banner.
 
-![](images/channels_write.png)
+![](images/scopes.png)
 
 ![](images/reinstall.png)
 
@@ -83,36 +85,51 @@ Follow the below instructions in order to fully deploy the bot locally,
 
  Copy `Bot User OAuth Access Token` and provide it in `provider:environment:BOT_TOKEN` field in `serverless.yml`. 
 
-9. All the required environment values in `serverless.yml` should be filled now. It should look something like,
+9. **ENV** Central TC needs to communicate with Slack lambda. Set the URI of Slack lambda in the `provider:environment:SLACK_LAMBDA_URI` field in `serverless.yml`. You can deploy Slack lambda at this port later after TC central is deployed. 
+    
+ By default, Slack lambda runs on port 3001. So if you are using defaults, you don't need to change this field.
+
+10. All the required environment values in `serverless.yml` should be filled now. It should look something like,
     ```
     provider:
     name: aws
     runtime: nodejs10.x
 
-    environment:
+      environment:
         # AWS configuration
         AWS_ACCESS_KEY_ID: FAKE_ACCESS_KEY_ID
         AWS_SECRET_ACCESS_KEY: FAKE_SECRET_ACCESS_KEY
         AWS_REGION: FAKE_REGION
         DYNAMODB_ENDPOINT: http://localhost:8000
+
         # TC Slack bot configuration
-        ADMIN_USER_TOKEN: xoxp-755656631591-747386116513-790462410723-d3be79c80587a314ac3f9138bb34e473
-        BOT_TOKEN: xoxb-755656631591-801933083072-yn118D4F6Pv6VEHLCesEIJsR
-        CHANNEL: demo
-        CLIENT_SIGNING_SECRET: 22a3b51e8d48599e5d77be0917da86a1
+        ADMIN_USER_TOKEN: xoxp-755656631591-747386116513-845027266816-d23e940b8db6cdf381c3f03d05443c09
+        BOT_TOKEN: xoxb-755656631591-802800975089-TC4mAb9cnF0TE9K3ElSaSkVQ
+        CHANNEL: general
+        CLIENT_SIGNING_SECRET: 49162bd8ebe79a8f64a9a29332e22c74
+        
+        # Slack Lambda configuration
+        SLACK_LAMBDA_URI: 'http://localhost:3001'
     ```
 
 ## Start Central TC server
 
 1. Install `serverless` globally. `npm i -g serverless`
 
-2. In the `Central_TC` directory run `npm i` to install required modules
+2. In the `Topbot` directory run `npm i` to install required modules
 
 3. [Optional] Check for lint errors by running `npm run lint`. Fix any errors by running `npm run lint:fix`
 
-4. In the `Central_TC` directory run `serverless offline` to start the Serverless API gateway on port 3000. The gateway runs the lambda functions on demand.
+4. In the `Topbot` directory run `serverless offline` to start the Serverless API gateway on port 3000. The gateway runs the lambda functions on demand.
 
-5. Expose the server using `ngrok`. Run `ngrok http 3000`. You will obtain a url like `https://c238256a.ngrok.io`. Note down this value. I will refer to it as NGROK_URL.
+5. Expose the server using `ngrok`. Run `ngrok http 3000`. You will obtain a url like `https://bba62ba4.ngrok.io`. Note down this value. I will refer to it as `NGROK_URL`.
+
+**NOTE on ngrok** 
+
+If you are using a free version of ngrok, it allows only one simultaneous connection. This is a problem if you want to run both Slack lambda and TC Central and expose both using ngrok. 
+
+The solution is to use the `--region` field while starting ngrok. So, if you're already running ngrok, you will see a region such as `Region United States (us)` in the terminal.
+To start another ngrok session just choose another region to run in by executing `ngrok http 3001 --region au`. This will start ngrok in `Region Australia (au)`
 
 ## Enable event subscriptions in Slack app
 
@@ -122,28 +139,22 @@ Follow the below instructions in order to fully deploy the bot locally,
 
 3. Go to `Subscribe to Bot Events` section and add `app_mention` event. (See the image below)
 
-4. Scroll up and provide a `Request URL`. Provide value `NGROK_URL/slack/receive` and click `Save changes` once verified.
+4. Scroll up and provide a `Request URL`. Provide value `NGROK_URL/slack/events` and click `Save changes` once verified.
 
 ![](images/events.png)
+
+## Enable interactive components in Slack app
+
+1. Go to https://api.slack.com/apps and click on the app that you created earlier in `Create a Slack App`
+
+2. Click on `Features` -> `Interactive Components`. Turn it on and fill in `NGROK_URL/slack/interactive` into the `Request URL` field. Click Save changes.
+
+![](images/interactive.png)
 
 ## Setup slack workspace
 
 1. Invite the bot user `/invite @topbot` to the channel that you configured earlier in the `provider:environment:CHANNEL` field in `serverless.yml`
 
-2. You will need atleast one other user in your workspace. Click on your workspace -> `Invite people`
+## Setup Slack lambda
 
-![](images/invite.png)
-
-3. Click `Share invite link`
-
-![](images/share_invite.png)
-
-4. Copy the link and post it in your browser. Follow the resulting instructions to add a new user. The new user's email has to be different from the one you created in `Create a free Slack account`
-
-![](images/link.png)
-
-5. Invite the new user `/invite @<User name>` to the channel that you configured earlier in the `provider:environment:CHANNEL` field in `serverless.yml`
-
-At the end of the process, you should have 2 human members and one app/bot in your channel
-
-![](images/channel.png)
+1. If you haven't already done it, then setup Slack lambda by following its `DeploymentGuide.md` before moving on to [Verification Guide](./VerificationGuide.md). Note that if you change the port of Slack lambda, then you need to update `provider:environment:SLACK_LAMBDA_URI` field in `serverless.yml` **and restart** TC Central lambda.

@@ -1,34 +1,15 @@
 /**
  * Handler for POST /slack/receive events from TC slack
  */
-const crypto = require('crypto')
 const config = require('config')
 const HttpStatus = require('http-status-codes')
-const { getSlackWebClient } = require('../common/helper')
+const { getSlackWebClient, authenticateRequest } = require('../common/helper')
 const logger = require('../common/logger')
-const accept = require('./accept')
-const approve = require('./approve')
 const help = require('./help')
 
 const commandTextRegex = new RegExp('^<.*> ')
 const commands = config.get('COMMANDS')
 const slackWebClient = getSlackWebClient()
-
-/**
- * Verify that the request is from slack
- * Documentation: https://api.slack.com/docs/verifying-requests-from-slack
- * Tutorial for node: https://medium.com/@rajat_sriv/verifying-requests-from-slack-using-node-js-69a8b771b704
- * @param {Object} event
- */
-function authenticateRequest (event) {
-  const body = event.body
-  const slackSignature = event.headers['X-Slack-Signature']
-  const timestamp = event.headers['X-Slack-Request-Timestamp']
-  const sigBasestring = `v0:${timestamp}:${body}`
-  const slackSigningSecret = process.env.CLIENT_SIGNING_SECRET
-  const receivedSignature = 'v0=' + crypto.createHmac('sha256', slackSigningSecret).update(sigBasestring, 'utf8').digest('hex')
-  return crypto.timingSafeEqual(Buffer.from(receivedSignature), Buffer.from(slackSignature))
-}
 
 /**
  * Call the appropriate handlers for the command
@@ -38,12 +19,6 @@ function authenticateRequest (event) {
 async function handleCommand (command, event) {
   try {
     switch (command) {
-      case commands.ACCEPT:
-        await accept.handler(event)
-        break
-      case commands.APPROVE:
-        await approve.handler(event)
-        break
       case commands.HELP:
         await help.handler(event)
         break

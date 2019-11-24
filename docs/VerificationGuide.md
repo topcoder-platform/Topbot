@@ -2,96 +2,142 @@
 
 ## Prerequisites
 
-1. All steps in [Deployment Guide](DeploymentGuide.md) are completed
+Both TC Central and Slack lambda need to be up and running. They both need to have their endpoints exposed by ngrok. They also need events and interactive component endpoints configured in Slack.
 
-2. Postman
+So you will have two Slack workspaces, 
+one where TC Central bot is installed - `Topcoder Workspace`
+and another where Slack bot is installed - `Client Workspace`
 
 ## Verification
 
-When everything is setup from Deployment Guide, you will have two users. One is the `USER` who created the slack workspace and the slack bot. The other is the `NEW_USER` who was added to the channel using the invite link.
+1. Issue a project request command in `Client Workspace` in any channel
 
-For verification, we'll use, 
+![](images/request.png)
 
-1. `USER` to launch a task
+Observe,
 
-2. `NEW_USER` to accept a task
+An acknowledgement is posted to `Client Workspace`
 
-3. `USER` to approve a task
+![](images/s_ack.png)
 
-4. `USER` and `NEW_USER` to run help command
+The request is posted to `Topcoder Workspace` along with the requester name and a "Post a response" button
 
-### Launch a task
+![](images/t_request.png)
 
-1. Get the `USER` member id by clicking on your workspace -> `Profile & Account` -> `Three vertical dots` in the side pane -> `Copy member ID`
+2. Click on the "Post a response" button in `Topcoder Workspace`
 
-![](images/member_id.png)
+Observe,
 
-This will be your `USER_ID`
+A dialog will open
 
-2. Load the [postman collection](postman/central_tc.postman_collection.json) and the [postman environment](postman/central_tc.postman_environment.json) into postman
+![](images/dialog.png)
 
-3. Update the environment variable `user` and set its current value to `USER_ID`
+3. Provide a response and click "Post"
 
-4. Run the `Launch` request. 
+![](images/dialog_response.png)
 
-5. You will see a new database entry in `tasks` table and the task request is posted to the slack channel
+Observe,
 
-![](images/launch.png)
+An acknowledgement is posted to `Topcoder Workspace`
 
-### Accept a task
+![](images/t_dialog_ack.png)
 
-1. Login to the workspace as `NEW_USER`, reply `@topbot accept` to the task launched in a thread
+The response is posted to `Client Workspace` along with the topcoder user name who responded and two buttons, "Accept" and "Decline"
+
+![](images/response.png)
+
+4. Click on "Accept"
+
+Observe,
+
+An acknowledgement is posted to `Client Workspace`
+
+![](images/accept_ack.png)
+
+Message is posted to `Topcoder Workspace` along with an "Approve" button
 
 ![](images/accept.png)
 
-2. A new channel will be created and `USER`, `NEW_USER` and `topbot` will be added to it
+5. Click on "Approve"
 
-![](images/new_channel.png)
+Observe,
 
-### Approve a task
+An acknowledgement is posted to `Topcoder Workspace`
 
-1. In the new channel that is created, as `USER`, type in `@topbot approve`
+![](images/approve_ack.png)
+
+Message is posted to `Client Workspace` telling them they can invite users now
 
 ![](images/approve.png)
 
-2. You will see an acknowledgement message, "Great! We'll get your work done"
+6. Issue an user invite command in `Client Workspace`
 
-### Help command
+![](images/email.png)
 
-1. As `USER` or `NEW_USER` type in `@topbot help` in a channel where the bot is a member
+Observe,
 
-2. You will see the list of supported commands
+An acknowledgement is posted to `Client Workspace`
 
-![](images/help.png)
+![](images/c_email.png)
 
-## Error scenarios
+A message is posted to `Topcoder Workspace`
 
-There are several error scenarios which the bot handles. These are,
+![](images/t_email.png)
 
-1. `accept` command in a non thread.
- 
-   ![](images/accept_non_thread.png) 
 
-2. `accept` a task which is already accepted.
- 
-   ![](images/second_accept.png) 
 
-3. `accept` in a thread but not for a launched task.
-    
-    ![](images/accept_non_task.png)
+This completes one flow. Repeat steps 1, 2 and 3 and then,
 
-4. `accept` a task launched by the same user
+4. Click on "Decline"
 
-    ![](images/accept_own_task.png)
+Observe,
 
-5. `approve` in a channel which is not the one created for a task.
+An acknowledgement is posted to `Client Workspace`
 
-    ![](images/approve_non_channel.png)
+![](images/declined_ack.png)
 
-6. `approve` task as a user who did not launch the task
+Message is posted to `Topcoder Workspace`
 
-    ![](images/approve_non_launcher.png)
+![](images/declined.png)
 
-7. `approve` task which is already approved as a launcher
 
-    ![](images/second_approve.png)
+Help command,
+
+1. Issue in `Client Workspace`
+
+![](images/c_help.png)
+
+2. Issue in `Topcoder Workspace`
+
+![](images/t_help.png)
+
+## Edge cases
+
+1. Issue project request in a thread which already has a project. This needs to fail because of many error scenarios. One of them is that the `email` command uses the root thread id to identify a project. So if a thread has two projects, the `email` command will always choose the first project. The second project can never have users invited. 
+
+![](images/project_exists.png)
+
+2. Try email command in non-request thread
+
+![](images/email_no_thread.png)
+
+3. Multiple clicks on Accept and Decline when project is Approved
+
+![](images/ad_approved.png)
+
+4. Multiple clicks on Accept and Decline when project is Accepted but not Approved
+
+![](images/ad_accepted.png)
+
+5. Multiple clicks on Accept and Decline when project is Declined
+
+![](images/ad_declined.png)
+
+6. Multipl clicks on Approve
+
+![](images/multiple_approved.png)
+
+7. Multiple clicks on "Post a response"
+
+![](images/multiple_post.png)
+
