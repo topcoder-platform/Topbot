@@ -86,6 +86,32 @@ async function updateProjectStatus (projectId, newStatus) {
 }
 
 /**
+ * Updates project with connect project name, connect project id and sets status to APPROVED
+ * @param {String} projectId
+ * @param {String} projectName
+ * @param {String} connectProjectId
+ */
+async function updateProjectWithConnectAndApprove (projectId, projectName, connectProjectId) {
+  return update({
+    TableName: config.get('DYNAMODB.PROJECT_TABLE_NAME'),
+    Key: {
+      id: projectId
+    },
+    UpdateExpression: 'set #pn = :p, #cpi = :c, #st = :s',
+    ExpressionAttributeValues: {
+      ':p': projectName,
+      ':c': connectProjectId,
+      ':s': config.get('PROJECT_STATUS.APPROVED')
+    },
+    ExpressionAttributeNames: {
+      '#pn': 'projectName',
+      '#cpi': 'connectProjectId',
+      '#st': 'status'
+    }
+  })
+}
+
+/**
  * Get a project by id
  * @param {String} projectId
  */
@@ -104,5 +130,6 @@ module.exports = {
   query,
   update,
   updateProjectStatus,
-  getProject
+  getProject,
+  updateProjectWithConnectAndApprove
 }

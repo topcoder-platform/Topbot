@@ -3,13 +3,27 @@
  */
 
 const Joi = require('@hapi/joi')
+const config = require('config')
+
+const PLATFORMS = config.get('PLATFORMS')
 
 // Schema for POST /request
 const requestSchema = Joi.object({
   description: Joi.string().required(),
   requester: Joi.string().required(),
-  clientSlackThread: Joi.string().required(),
-  clientSlackChannel: Joi.string().required()
+  clientSlackThread: Joi.string().when('platform', {
+    is: PLATFORMS.SLACK,
+    then: Joi.required()
+  }),
+  clientSlackChannel: Joi.string().when('platform', {
+    is: PLATFORMS.SLACK,
+    then: Joi.required()
+  }),
+  teamsConversationId: Joi.string().when('platform', {
+    is: PLATFORMS.TEAMS,
+    then: Joi.required()
+  }),
+  platform: Joi.string().valid(PLATFORMS.SLACK, PLATFORMS.TEAMS).required()
 })
 
 // Schema for POST /accept

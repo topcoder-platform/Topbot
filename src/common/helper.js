@@ -4,6 +4,7 @@
 
 const crypto = require('crypto')
 const { WebClient } = require('@slack/web-api')
+const config = require('config')
 
 const slackWebClient = null
 
@@ -44,8 +45,22 @@ function authenticateRequest (event) {
   return crypto.timingSafeEqual(Buffer.from(receivedSignature), Buffer.from(slackSignature))
 }
 
+/**
+ * Returns base URI for each platform
+ * @param {String} platform
+ */
+function getClientLambdaUri (platform) {
+  switch (platform) {
+    case config.get('PLATFORMS.SLACK'):
+      return process.env.SLACK_LAMBDA_URI
+    case config.get('PLATFORMS.TEAMS'):
+      return process.env.TEAMS_LAMBDA_URI
+  }
+}
+
 module.exports = {
   getSlackWebClient,
   reflect,
-  authenticateRequest
+  authenticateRequest,
+  getClientLambdaUri
 }

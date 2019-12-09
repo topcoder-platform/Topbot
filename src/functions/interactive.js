@@ -5,8 +5,8 @@ const querystring = require('querystring')
 const rp = require('request-promise')
 const config = require('config')
 const HttpStatus = require('http-status-codes')
-const { getSlackWebClient, authenticateRequest } = require('../common/helper')
-const { getProject, updateProjectStatus } = require('../common/dbHelper')
+const { getSlackWebClient, authenticateRequest, getClientLambdaUri } = require('../common/helper')
+const { getProject, updateProjectStatus, updateProjectWithConnectAndApprove } = require('../common/dbHelper')
 const logger = require('../common/logger')
 
 const INTERACTIVE_MESSAGE_TYPES = config.get('INTERACTIVE_MESSAGE_TYPES')
@@ -42,6 +42,9 @@ module.exports.handler = async event => {
           case INTERACTIVE_MESSAGE_TYPES.TEXT_AREA_POST_RESPONSE:
             await handlePostResponseDialogSubmission(payload)
             break
+          case INTERACTIVE_MESSAGE_TYPES.TEXT_AREA_PROJECT_NAME:
+            await handleProjectNameDialogSubmission(payload)
+            break
           default:
         }
       }
@@ -49,7 +52,7 @@ module.exports.handler = async event => {
       default:
     }
 
-    return { // Acknowledge to Slack that the message was received
+    return {
       statusCode: HttpStatus.OK
     }
   } catch (err) {
@@ -138,11 +141,11 @@ async function handlePostResponseDialogSubmission (payload) {
     })
   }
 
-  // Forward response to Slack lambda
+  // Forward response to Client lambda
   try {
     await rp({
       method: 'POST',
-      uri: `${process.env.SLACK_LAMBDA_URI}/response`,
+      uri: `${getClientLambdaUri(project.platform)}/response`,
       json: true,
       body: {
         projectId: project.id,
@@ -171,6 +174,98 @@ async function handlePostResponseDialogSubmission (payload) {
 }
 
 /**
+ * Handler for project name dialog submission
+ * @param {Object} payload
+ */
+async function handleProjectNameDialogSubmission (payload) {
+  // Get project
+  const id = payload.callback_id
+  const project = await getProject(id)
+  // Get project name
+  const projectName = payload.submission[INTERACTIVE_MESSAGE_TYPES.TEXT_AREA_PROJECT_NAME].trim()
+
+  // Check if empty
+  if (projectName.length === 0) {
+    return slackWebClient.chat.postMessage({
+      thread_ts: project.tcSlackThread,
+      channel: process.env.CHANNEL,
+      text: 'Project name cannot be empty'
+    })
+  }
+
+  // Check if exists
+  if (!project) {
+    return slackWebClient.chat.postMessage({
+      thread_ts: project.tcSlackThread,
+      channel: process.env.CHANNEL,
+      text: config.get('CONSTANTS.PROJECT_DOES_NOT_EXIST')
+    })
+  }
+
+  try {
+    // Create project in connect
+    var connectResponse = await rp({
+      uri: config.get('CONNECT.CREATE_PROJECT'),
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.CONNECT_BEARER_TOKEN}`
+      },
+      body: {
+        param: {
+          name: projectName,
+          description: project.description,
+          type: config.get('CONNECT.PROJECT_TYPE'),
+          templateId: config.get('CONNECT.CONNECT_TEMPLATE_ID'),
+          version: config.get('CONNECT.CONNECT_VERSION'),
+          estimation: [],
+          attachments: [],
+          details: config.get('CONNECT.PROJECT_DETAILS_DEV_QA')
+        }
+      },
+      json: true
+    })
+  } catch (e) {
+    logger.logFullError(connectResponse)
+    return slackWebClient.chat.postMessage({
+      thread_ts: project.tcSlackThread,
+      channel: process.env.CHANNEL,
+      text: `Connect project could not be created. ${(((connectResponse || {}).result || {}).content || {}).message || ''}`
+    })
+  }
+
+  // Check if valida id is returned
+  const connectProjectId = (((connectResponse || {}).result || {}).content || {}).id
+  if (!connectProjectId) {
+    logger.logFullError(connectResponse)
+    return slackWebClient.chat.postMessage({
+      thread_ts: project.tcSlackThread,
+      channel: process.env.CHANNEL,
+      text: 'Connect project could not be created. Project id returned was empty'
+    })
+  }
+
+  await updateProjectWithConnectAndApprove(project.id, projectName, connectProjectId)
+
+  await slackWebClient.chat.postMessage({
+    thread_ts: project.tcSlackThread,
+    channel: process.env.CHANNEL,
+    text: 'The project was created successfully'
+  })
+
+  // Post approved to client
+  await rp({
+    method: 'POST',
+    uri: `${getClientLambdaUri(project.platform)}/approve`,
+    body: {
+      projectId: project.id
+    },
+    json: true
+  })
+}
+
+/**
  * Handle click on Approve button
  * @param {Object} payload
  */
@@ -196,23 +291,22 @@ async function handleApprove (payload) {
     })
   }
 
-  // POST to Slack lambda
-  await rp({
-    method: 'POST',
-    uri: `${process.env.SLACK_LAMBDA_URI}/approve`,
-    body: {
-      projectId
-    },
-    json: true
+  // Open a dialog to get project name
+  await slackWebClient.dialog.open({
+    trigger_id: payload.trigger_id,
+    dialog: JSON.stringify({
+      callback_id: projectId,
+      title: 'Enter a project name',
+      submit_label: 'Post',
+      elements: [{
+        label: 'Project name',
+        name: INTERACTIVE_MESSAGE_TYPES.TEXT_AREA_PROJECT_NAME,
+        type: 'textarea',
+        hint: 'Provide a project name'
+      }],
+      state: JSON.stringify({
+        type: INTERACTIVE_MESSAGE_TYPES.TEXT_AREA_PROJECT_NAME
+      })
+    })
   })
-
-  // Post acknowledgement to TC Slack
-  await slackWebClient.chat.postMessage({
-    thread_ts: payload.message_ts,
-    channel: payload.channel.id,
-    text: 'Project approved!'
-  })
-
-  // Set project status to approved
-  await updateProjectStatus(project.id, config.get('PROJECT_STATUS.APPROVED'))
 }

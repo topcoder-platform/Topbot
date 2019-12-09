@@ -55,15 +55,33 @@ module.exports.handler = async event => {
     }
 
     // Create project object
-    var project = {
-      id: projectId,
-      description: value.description,
-      requester: value.requester,
-      createdAt: new Date().toISOString(),
-      status: config.get('PROJECT_STATUS.LAUNCHED'),
-      clientSlackThread: value.clientSlackThread,
-      clientSlackChannel: value.clientSlackChannel,
-      tcSlackThread: response.ts
+    var project
+    switch (value.platform) {
+      case config.get('PLATFORMS.SLACK'):
+        project = {
+          id: projectId,
+          description: value.description,
+          requester: value.requester,
+          createdAt: new Date().toISOString(),
+          status: config.get('PROJECT_STATUS.LAUNCHED'),
+          clientSlackThread: value.clientSlackThread,
+          clientSlackChannel: value.clientSlackChannel,
+          tcSlackThread: response.ts,
+          platform: value.platform
+        }
+        break
+      case config.get('PLATFORMS.TEAMS'):
+        project = {
+          id: projectId,
+          description: value.description,
+          requester: value.requester,
+          createdAt: new Date().toISOString(),
+          status: config.get('PROJECT_STATUS.LAUNCHED'),
+          teamsConversationId: value.teamsConversationId,
+          tcSlackThread: response.ts,
+          platform: value.platform
+        }
+        break
     }
 
     // Save project to Dynamodb table

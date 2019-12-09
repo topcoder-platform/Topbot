@@ -89,13 +89,21 @@ If you already have dynamodb running, then you can skip the install and run step
     
  By default, Slack lambda runs on port 3001. So if you are using defaults, you don't need to change this field.
 
-10. All the required environment values in `serverless.yml` should be filled now. It should look something like,
+10. **ENV** Central TC needs to communicate with Slack lambda. Set the URI of Teams lambda in the `provider:environment:TEAMS_LAMBDA_URI` field in `serverless.yml`. You can deploy Teams lambda at this port later after TC central is deployed. 
+    
+ By default, Teams lambda runs on port 3002. So if you are using defaults, you don't need to change this field.
+
+11. **ENV** Provide conect bearer token in `serverless.yml` -> `provider:environment:CONNECT_BEARER_TOKEN`
+
+12. All the required environment values in `serverless.yml` should be filled now. It should look something like,
     ```
+    service: central_tc
+
     provider:
     name: aws
     runtime: nodejs10.x
 
-      environment:
+    environment:
         # AWS configuration
         AWS_ACCESS_KEY_ID: FAKE_ACCESS_KEY_ID
         AWS_SECRET_ACCESS_KEY: FAKE_SECRET_ACCESS_KEY
@@ -103,13 +111,19 @@ If you already have dynamodb running, then you can skip the install and run step
         DYNAMODB_ENDPOINT: http://localhost:8000
 
         # TC Slack bot configuration
-        ADMIN_USER_TOKEN: xoxp-755656631591-747386116513-845027266816-d23e940b8db6cdf381c3f03d05443c09
-        BOT_TOKEN: xoxb-755656631591-802800975089-TC4mAb9cnF0TE9K3ElSaSkVQ
+        ADMIN_USER_TOKEN: xoxp-755656631591-747386116513-856432302385-bbe6afecbaa9410f2630e45908b5e498
+        BOT_TOKEN: xoxb-755656631591-802800975089-M6OZs1GH4HlF16PuZsgfHVQ1
         CHANNEL: general
         CLIENT_SIGNING_SECRET: 49162bd8ebe79a8f64a9a29332e22c74
         
         # Slack Lambda configuration
         SLACK_LAMBDA_URI: 'http://localhost:3001'
+
+        # Teams lambda configuration
+        TEAMS_LAMBDA_URI: 'http://localhost:3002'
+
+        # Topcoder connect configuration
+        CONNECT_BEARER_TOKEN: sample_connect_bearer_tokeniJKV1QiLCJhbGciOiJI.eyJyb2xlcyI6WyJUb3Bjb2RlciBVc2VyIl0sImlzcyI6Imh0dHBzOi8vYXBpLnRvcGNvZGVyLWRldi5jb20iLsample_connect_bearer_tokenIiwiZXhwIjoxNTsample_connect_bearer_tokenQiOiI0MDE1Osample_connect_bearer_tokenMTU3NTUxMTk3NywiZW1haWwiOiJiaWxsc2Vksample_connect_bearer_token.-ZJHFCqxgvdCeyx9sample_connect_bearer_tokenCk
     ```
 
 ## Start Central TC server
@@ -157,4 +171,8 @@ To start another ngrok session just choose another region to run in by executing
 
 ## Setup Slack lambda
 
-1. If you haven't already done it, then setup Slack lambda by following its `DeploymentGuide.md` before moving on to [Verification Guide](./VerificationGuide.md). Note that if you change the port of Slack lambda, then you need to update `provider:environment:SLACK_LAMBDA_URI` field in `serverless.yml` **and restart** TC Central lambda.
+If you haven't already done it, then setup Slack lambda by following its `DeploymentGuide.md` before moving on to [Verification Guide](./VerificationGuide.md). Note that if you change the port of Slack lambda, then you need to update `provider:environment:SLACK_LAMBDA_URI` field in `serverless.yml` **and restart** TC Central lambda.
+
+## Setup Teams lambda
+
+If you haven't already done it, then setup Teams lambda by following its `DeploymentGuide.md` before moving on to [Verification Guide](./VerificationGuide.md). Note that if you change the port of Teams lambda, then you need to update `provider:environment:TEAMS_LAMBDA_URI` field in `serverless.yml` **and restart** TC Central lambda.

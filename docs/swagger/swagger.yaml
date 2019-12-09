@@ -175,6 +175,12 @@ definitions:
       tcSlackThread:
         type: "string"
         example: "1574566452.000100"
+      teamsConversationId:
+        type: "string"
+        example: "19:efb4cf20780543aeab5a152a3571e777@thread.skype;messageid=1575819219395"
+      platform:
+        type: "string"
+        example: "slack"
       status:
         type: "string"
         example: "LAUNCHED"
@@ -185,6 +191,8 @@ definitions:
       - "requester"
       - "clientSlackThread"
       - "clientSlackChannel"
+      - "teamsConversationId"
+      - "platform"
     properties:
       description:
         type: "string"
@@ -198,3 +206,9 @@ definitions:
       clientSlackChannel:
         type: "string"
         example: "CN34FJLDP"
+      teamsConversationId:
+        type: "string"
+        example: "19:efb4cf20780543aeab5a152a3571e777@thread.skype;messageid=1575819219395"
+      platform:
+        type: "string"
+        example: "slack"

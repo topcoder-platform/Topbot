@@ -12,13 +12,19 @@ provider:
     DYNAMODB_ENDPOINT: http://localhost:8000
 
     # TC Slack bot configuration
-    ADMIN_USER_TOKEN: xoxp-755656631591-747386116513-845027266816-d23e940b8db6cdf381c3f03d05443c09
-    BOT_TOKEN: xoxb-755656631591-802800975089-TC4mAb9cnF0TE9K3ElSaSkVQ
+    ADMIN_USER_TOKEN: xoxp-755656631591-747386116513-856432302385-bbe6afecbaa9410f2630e45908b5e498
+    BOT_TOKEN: xoxb-755656631591-802800975089-M6OZs1GH4HlF16PuZsgfHVQ1
     CHANNEL: general
     CLIENT_SIGNING_SECRET: 49162bd8ebe79a8f64a9a29332e22c74
     
     # Slack Lambda configuration
     SLACK_LAMBDA_URI: 'http://localhost:3001'
+
+    # Teams lambda configuration
+    TEAMS_LAMBDA_URI: 'http://localhost:3002'
+
+    # Topcoder connect configuration
+    CONNECT_BEARER_TOKEN:
 
 functions:
   request:

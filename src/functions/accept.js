@@ -39,16 +39,16 @@ module.exports.handler = async event => {
     await slackWebClient.chat.postMessage({
       thread_ts: project.tcSlackThread,
       channel: process.env.CHANNEL,
-      text: 'Great, the client accepted the project, please approve',
+      text: 'Great, the client accepted the project, please provide an awesome project name',
       mrkdwn: true,
       attachments: [
         {
-          fallback: 'Click button to approve project',
+          fallback: 'Click button to provide a project name',
           callback_id: project.id,
           attachment_type: 'default',
           actions: [{
             name: config.get('INTERACTIVE_MESSAGE_TYPES.APPROVE'),
-            text: 'Approve',
+            text: 'Provide project name',
             type: 'button'
           }]
         }]

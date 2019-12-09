@@ -14,8 +14,6 @@ Follow instructions in [Deployment Guide](docs/DeploymentGuide.md)
 
 Follow instructions in [Verification Guide](docs/VerificationGuide.md)
 
-Also see demo video at https://youtu.be/PqyhPuFK7ew
-
 ## Swagger documentation
 
 REST API's are documented in [swagger.yaml](docs/swagger/swagger.yaml)
@@ -46,3 +44,22 @@ Why we need it: `clientSlackThread` and `clientSlackChannel`: These fields are u
 
 Why we need it: This is used to post messages to TC Slack when routes `/accept` or `/decline` or `/invite` is called. Also used during dialog submission. Without it we'd have no context of which thread to post responses to.
 There is no need to store tcSlackChannel as it is fixed.
+
+`teamsConversationId`: Conversation id in MS Teams where the @topbot request command was initially invoked. Conversation id is a combination of channel id and message id so we don't need an additional teams field to store channel information (like `clientSlackChannel`)
+
+Why we need it: This field is used by Teams lambda to identify the project when an `email` command is issued. Without this field we'd have no way to identify which conversation to post responses to.
+
+`platform`: Supported messageing platforms. Currently it can be either `slack` or `teams`. It is used to differentiate requests from Client Slack and Client MS Teams.
+
+## Existing issue
+
+When submitting a dialog response you might intermittently see an error such as https://monosnap.com/file/fkd5lWcjP8H4lOP8ozxrPcX4EOEEyc
+
+The reason is that Slack expects a response within 3 seconds but since we're using lambda we can only return from a function after all our operations complete
+
+These operations might take more than 3 seconds at times
+
+The solution seems to be to have one lambda function call another using something like AWS SNS
+
+See https://stackoverflow.com/questions/31714788/can-an-aws-lambda-function-call-another
+

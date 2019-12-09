@@ -3,6 +3,7 @@
  */
 
 const HttpStatus = require('http-status-codes')
+const rp = require('request-promise')
 const config = require('config')
 const schema = require('../common/schema')
 const { getSlackWebClient } = require('../common/helper')
@@ -31,6 +32,30 @@ module.exports.handler = async event => {
         body: JSON.stringify({
           name: config.get('CONSTANTS.PROJECT_DOES_NOT_EXIST')
         })
+      }
+    }
+
+    try {
+      // Invite member to Connect  project
+      await rp({
+        uri: config.get('CONNECT.INVITE_MEMBER')(project.connectProjectId),
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.CONNECT_BEARER_TOKEN}`
+        },
+        body: {
+          param: {
+            emails: [value.email],
+            role: config.get('CONNECT.INVITE_ROLE')
+          }
+        },
+        json: true
+      })
+    } catch (e) {
+      return {
+        statusCode: e.statusCode
       }
     }
 
