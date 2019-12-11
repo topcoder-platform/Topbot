@@ -66,6 +66,7 @@ module.exports.handler = async event => {
           status: config.get('PROJECT_STATUS.LAUNCHED'),
           clientSlackThread: value.clientSlackThread,
           clientSlackChannel: value.clientSlackChannel,
+          slackTeam: value.slackTeam,
           tcSlackThread: response.ts,
           platform: value.platform
         }

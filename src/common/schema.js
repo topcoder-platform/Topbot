@@ -19,6 +19,10 @@ const requestSchema = Joi.object({
     is: PLATFORMS.SLACK,
     then: Joi.required()
   }),
+  slackTeam: Joi.string().when('platform', {
+    is: PLATFORMS.SLACK,
+    then: Joi.required()
+  }),
   teamsConversationId: Joi.string().when('platform', {
     is: PLATFORMS.TEAMS,
     then: Joi.required()

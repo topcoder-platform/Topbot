@@ -20,7 +20,7 @@ REST API's are documented in [swagger.yaml](docs/swagger/swagger.yaml)
 
 ## DynamoDB database description
 
-Database has one table `projects` with the following fields,
+1. Table `projects` has the following fields,
 
 `id` (primary_key): Unique id for each project
 
@@ -38,7 +38,11 @@ Why we need it: To handle scenarios like multiple clicks on buttons.
 
 `clientSlackChannel`: The channel in client slack where the @topbot request command was initially invoked. The client can invoked this command in any channel so the combination of clientSlackThread and clientSlackChannel uniquely identify a request thread.
 
-Why we need it: `clientSlackThread` and `clientSlackChannel`: These fields are used by Slack lambda to post a response to the right thread when `/approve` is called on it. It is also used to identify the project when an `email` command is issued. Without these fields we'd have no context of which thread to post responses to.
+Why we need it: `clientSlackThread`, `clientSlackChannel`: These fields are used by Slack lambda to post a response to the right thread when `/approve` is called on it. It is also used to identify the project when an `email` command is issued. Without these fields we'd have no context of which thread to post responses to.
+
+`slackTeam`: The team id of client slack workspace
+
+Why we need it: To obtain the bot token used to communicate with client slack from the `slack_clients` table for this team.
 
 `tcSlackThread`: Thread id in topcoder slack where the project request was initially posted by TC Central.
 
@@ -50,6 +54,17 @@ There is no need to store tcSlackChannel as it is fixed.
 Why we need it: This field is used by Teams lambda to identify the project when an `email` command is issued. Without this field we'd have no way to identify which conversation to post responses to.
 
 `platform`: Supported messageing platforms. Currently it can be either `slack` or `teams`. It is used to differentiate requests from Client Slack and Client MS Teams.
+
+2. Table `slack_clients` has the following fields:
+
+`teamId`: The id of the team. This is the primary key used to identify the team in which the bot is installed.
+
+`userId`: User id of the user who installed the bot into the team
+
+`userToken`: Encrypted access token of the user
+
+`botToken`: Encrypted access token of the bot. It is used to post messages to client slack.
+
 
 ## Existing issue
 

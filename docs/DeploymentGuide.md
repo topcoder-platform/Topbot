@@ -28,7 +28,7 @@ If you already have dynamodb running, then you can skip the install and run step
 
 3. [Optional] You can view the contents of dynamodb in your browser using a tool like [dynamodb-admin](https://www.npmjs.com/package/dynamodb-admin)
 
-## Create a free Slack account
+## Create a free Slack account - This will be your Topcoder slack
 
 1. Create a slack account if you don't have one already. Click `Create a new workspace` [here](https://slack.com/get-started).
 

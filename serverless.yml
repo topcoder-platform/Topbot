@@ -24,7 +24,7 @@ provider:
     TEAMS_LAMBDA_URI: 'http://localhost:3002'
 
     # Topcoder connect configuration
-    CONNECT_BEARER_TOKEN:
+    CONNECT_BEARER_TOKEN: 
 
 functions:
   request:
