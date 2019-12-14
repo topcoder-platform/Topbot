@@ -19,7 +19,8 @@ module.exports = {
   // Dynamodb table and index names
   DYNAMODB: {
     PROJECT_TABLE_NAME: 'projects',
-    CLIENT_SLACK_THREAD_INDEX: 'client_slack_thread_index'
+    CLIENT_SLACK_THREAD_INDEX: 'client_slack_thread_index',
+    TEAMS_CONVERSATION_ID_INDEX: 'teams_conversation_id_index'
   },
   // Supported commands received as events
   COMMANDS: {

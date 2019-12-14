@@ -11,6 +11,9 @@ const projects = {
   }, {
     AttributeName: 'clientSlackThread',
     AttributeType: 'S'
+  }, {
+    AttributeName: 'teamsConversationId',
+    AttributeType: 'S'
   }],
   KeySchema: [{
     AttributeName: 'id',
@@ -24,6 +27,19 @@ const projects = {
     IndexName: config.get('DYNAMODB.CLIENT_SLACK_THREAD_INDEX'),
     KeySchema: [{
       AttributeName: 'clientSlackThread',
+      KeyType: 'HASH'
+    }],
+    Projection: {
+      ProjectionType: 'ALL'
+    },
+    ProvisionedThroughput: {
+      ReadCapacityUnits: 1,
+      WriteCapacityUnits: 1
+    }
+  }, {
+    IndexName: config.get('DYNAMODB.TEAMS_CONVERSATION_ID_INDEX'),
+    KeySchema: [{
+      AttributeName: 'teamsConversationId',
       KeyType: 'HASH'
     }],
     Projection: {
