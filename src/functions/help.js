@@ -5,9 +5,7 @@
 const { getSlackWebClient } = require('../common/helper')
 const slackWebClient = getSlackWebClient()
 
-module.exports.handler = async event => {
-  const body = JSON.parse(event.body)
-
+module.exports.handler = async body => {
   // Post help mesage
   await slackWebClient.chat.postMessage({
     text: 'Help!',

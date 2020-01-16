@@ -2,31 +2,43 @@
 
 ## Prerequisites
 
-1. Node.js > v10.14.2
+1. Node.js >= v12.14.1
 
-2. ngrok
+2. localstack: https://github.com/localstack/localstack
 
-Follow the below instructions in order to fully deploy the bot locally,
+3. ngrok: https://ngrok.com/download
 
-## Dynamodb setup 
+## AWS Services
 
-If you already have dynamodb running, then you can skip the install and run steps 1 and 2
+Topbot uses Dynamodb to store/retrieve data and listens to SNS topics to obtain events from Topbot - Receiver.
 
-1. Download and install dynamodb from [here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.DownloadingAndRunning.html)
+Both these services can be run locally using localstack.
 
-2. In terminal, navigate to the directory where you extracted DynamoDBLocal.jar, and enter the following command. `java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -sharedDb`. This will start dynamodb on port 8000 by default.
+1. Start the localstack server, `localstack start`.You will obtain a port number for dynamodb and sns.
 
-3. **ENV** Provide aws dynamodb configuration options in the `provider:environment` field in `serverless.yml`. For local deployment, the values will be,
+2. **ENV** Update `provider:environment:DYNAMODB_ENDPOINT` field in `serverless.yml` with the dynamodb port,
     ```
-    environment:
+      environment:
         # AWS configuration
         AWS_ACCESS_KEY_ID: FAKE_ACCESS_KEY_ID
         AWS_SECRET_ACCESS_KEY: FAKE_SECRET_ACCESS_KEY
         AWS_REGION: FAKE_REGION
-        DYNAMODB_ENDPOINT: http://localhost:8000
+        DYNAMODB_ENDPOINT: http://localhost:4569 # This value
     ```
 
-3. [Optional] You can view the contents of dynamodb in your browser using a tool like [dynamodb-admin](https://www.npmjs.com/package/dynamodb-admin)
+3. **ENV** Update `custom:serverless-offline-sns:sns-endpoint` field in `serverless.yml` with the sns port,
+    ```
+    serverless-offline-sns:
+        port: 4000
+        debug: false
+        sns-endpoint: http://localhost:4575 # This value
+    ```
+
+Update `provider:environment:SNS_ENDPOINT` with this value.
+
+The other sns config values can be set the same unless you explicitly change it in sns.
+
+4. [Optional] You can view the contents of dynamodb in your browser using a tool like [dynamodb-admin](https://www.npmjs.com/package/dynamodb-admin)
 
 ## Create a free Slack account - This will be your Topcoder slack
 
@@ -108,7 +120,7 @@ If you already have dynamodb running, then you can skip the install and run step
         AWS_ACCESS_KEY_ID: FAKE_ACCESS_KEY_ID
         AWS_SECRET_ACCESS_KEY: FAKE_SECRET_ACCESS_KEY
         AWS_REGION: FAKE_REGION
-        DYNAMODB_ENDPOINT: http://localhost:8000
+        DYNAMODB_ENDPOINT: http://localhost:4569
 
         # TC Slack bot configuration
         ADMIN_USER_TOKEN: xoxp-755656631591-747386116513-856432302385-bbe6afecbaa9410f2630e45908b5e498
@@ -136,7 +148,10 @@ If you already have dynamodb running, then you can skip the install and run step
 
 4. In the `Topbot` directory run `serverless offline` to start the Serverless API gateway on port 3000. The gateway runs the lambda functions on demand.
 
-5. Expose the server using `ngrok`. Run `ngrok http 3000`. You will obtain a url like `https://bba62ba4.ngrok.io`. Note down this value. I will refer to it as `NGROK_URL`.
+5. You should see that the SNS topics, `tc-slack-events` and `tc-slack-interactive` are created. You can verify this using the aws cli,
+`aws --endpoint-url=http://localhost:4575 sns list-topics`
+
+6. Expose the server using `ngrok`. Run `ngrok http 3000`. You will obtain a url like `https://bba62ba4.ngrok.io`. Note down this value. I will refer to it as `NGROK_URL`.
 
 **NOTE on ngrok** 
 

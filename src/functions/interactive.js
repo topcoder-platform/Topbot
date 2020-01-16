@@ -4,8 +4,7 @@
 const querystring = require('querystring')
 const rp = require('request-promise')
 const config = require('config')
-const HttpStatus = require('http-status-codes')
-const { getSlackWebClient, authenticateRequest, getClientLambdaUri } = require('../common/helper')
+const { getSlackWebClient, getClientLambdaUri } = require('../common/helper')
 const { getProject, updateProjectStatus, updateProjectWithConnectAndApprove } = require('../common/dbHelper')
 const logger = require('../common/logger')
 
@@ -14,46 +13,38 @@ const slackWebClient = getSlackWebClient()
 
 module.exports.handler = async event => {
   try {
-    const isValidRequest = authenticateRequest(event)
-    if (!isValidRequest) {
-      return {
-        statusCode: HttpStatus.BAD_REQUEST
-      }
-    }
+    if (event && event.Records && event.Records[0] && event.Records[0].Sns) {
+      // event.Records[0].Sns.Message is a URL encoded string
+      var payload = JSON.parse(querystring.decode(event.Records[0].Sns.Message).payload)
 
-    // Payload is an URL encoded string
-    var payload = JSON.parse(querystring.decode(event.body).payload)
+      switch (payload.type) {
+        case 'interactive_message':
+          switch (payload.actions[0].name) {
+            case INTERACTIVE_MESSAGE_TYPES.POST_RESPONSE:
+              await handlePostResponse(payload)
+              break
+            case INTERACTIVE_MESSAGE_TYPES.APPROVE:
+              await handleApprove(payload)
+              break
+            default:
+          }
+          break
 
-    switch (payload.type) {
-      case 'interactive_message':
-        switch (payload.actions[0].name) {
-          case INTERACTIVE_MESSAGE_TYPES.POST_RESPONSE:
-            await handlePostResponse(payload)
-            break
-          case INTERACTIVE_MESSAGE_TYPES.APPROVE:
-            await handleApprove(payload)
-            break
-          default:
+        case 'dialog_submission': {
+          const type = JSON.parse(payload.state).type
+          switch (type) {
+            case INTERACTIVE_MESSAGE_TYPES.TEXT_AREA_POST_RESPONSE:
+              await handlePostResponseDialogSubmission(payload)
+              break
+            case INTERACTIVE_MESSAGE_TYPES.TEXT_AREA_PROJECT_NAME:
+              await handleProjectNameDialogSubmission(payload)
+              break
+            default:
+          }
         }
-        break
-      case 'dialog_submission': {
-        const type = JSON.parse(payload.state).type
-        switch (type) {
-          case INTERACTIVE_MESSAGE_TYPES.TEXT_AREA_POST_RESPONSE:
-            await handlePostResponseDialogSubmission(payload)
-            break
-          case INTERACTIVE_MESSAGE_TYPES.TEXT_AREA_PROJECT_NAME:
-            await handleProjectNameDialogSubmission(payload)
-            break
-          default:
-        }
+          break
+        default:
       }
-        break
-      default:
-    }
-
-    return {
-      statusCode: HttpStatus.OK
     }
   } catch (err) {
     logger.logFullError(err)
@@ -227,7 +218,7 @@ async function handleProjectNameDialogSubmission (payload) {
       json: true
     })
   } catch (e) {
-    logger.logFullError(connectResponse)
+    logger.logFullError(e)
     return slackWebClient.chat.postMessage({
       thread_ts: project.tcSlackThread,
       channel: process.env.CHANNEL,

@@ -2,8 +2,7 @@
  * Handler for POST /slack/receive events from TC slack
  */
 const config = require('config')
-const HttpStatus = require('http-status-codes')
-const { getSlackWebClient, authenticateRequest } = require('../common/helper')
+const { getSlackWebClient } = require('../common/helper')
 const logger = require('../common/logger')
 const help = require('./help')
 
@@ -14,17 +13,16 @@ const slackWebClient = getSlackWebClient()
 /**
  * Call the appropriate handlers for the command
  * @param {String} command
- * @param {Object} event
+ * @param {Object} body
  */
-async function handleCommand (command, event) {
+async function handleCommand (command, body) {
   try {
     switch (command) {
       case commands.HELP:
-        await help.handler(event)
+        await help.handler(body)
         break
       default: {
         // Command not supported
-        const body = JSON.parse(event.body)
         await slackWebClient.chat.postMessage({
           thread_ts: body.event.ts,
           channel: body.event.channel,
@@ -38,24 +36,9 @@ async function handleCommand (command, event) {
 }
 
 module.exports.handler = async event => {
-  const isValidRequest = authenticateRequest(event)
-  if (!isValidRequest) {
-    return {
-      statusCode: HttpStatus.BAD_REQUEST
-    }
-  }
-
-  const body = JSON.parse(event.body)
-
-  if (body.event && body.event.text) {
+  if (event && event.Records && event.Records[0] && event.Records[0].Sns) {
+    const body = JSON.parse(event.Records[0].Sns.Message)
     const command = body.event.text.replace(commandTextRegex, '').trim().toLowerCase()
-    await handleCommand(command, event)
-  }
-
-  return {
-    statusCode: HttpStatus.OK,
-    body: JSON.stringify({
-      challenge: body.challenge // Event subscription handler must respond with the challenge value
-    })
+    await handleCommand(command, body)
   }
 }
