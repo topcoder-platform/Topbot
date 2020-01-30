@@ -1,14 +1,15 @@
-service: central_tc
+service: centralBotLambda
 
 provider:
   name: aws
   runtime: nodejs10.x
+  profile: bot-dev
 
   environment:
     # AWS configuration
-    AWS_ACCESS_KEY_ID: FAKE_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY: FAKE_SECRET_ACCESS_KEY
-    AWS_REGION: FAKE_REGION
+    ACCESS_KEY_ID: FAKE_ACCESS_KEY_ID
+    SECRET_ACCESS_KEY: FAKE_SECRET_ACCESS_KEY
+    REGION: FAKE_REGION
     DYNAMODB_ENDPOINT: http://localhost:4569
 
     # TC Slack bot configuration
