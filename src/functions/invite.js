@@ -46,10 +46,8 @@ module.exports.handler = async event => {
           Authorization: `Bearer ${process.env.CONNECT_BEARER_TOKEN}`
         },
         body: {
-          param: {
-            emails: [value.email],
-            role: config.get('CONNECT.INVITE_ROLE')
-          }
+          emails: [value.email],
+          role: config.get('CONNECT.INVITE_ROLE')
         },
         json: true
       })

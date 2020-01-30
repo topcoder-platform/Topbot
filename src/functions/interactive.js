@@ -146,6 +146,7 @@ async function handlePostResponseDialogSubmission (payload) {
   } catch (e) {
     logger.logFullError(e)
     // If error, post error to TC Slack
+    //TODO update error message depending upon platform slack/teams
     return slackWebClient.chat.postMessage({
       thread_ts: project.tcSlackThread,
       channel: process.env.CHANNEL,
@@ -195,6 +196,16 @@ async function handleProjectNameDialogSubmission (payload) {
 
   try {
     // Create project in connect
+    const projectBody = {
+      name: projectName,
+      description: project.description,
+      type: config.get('CONNECT.PROJECT_TYPE'),
+      templateId: config.get('CONNECT.CONNECT_TEMPLATE_ID'),
+      version: config.get('CONNECT.CONNECT_VERSION'),
+      estimation: [],
+      attachments: [],
+      details: config.get('CONNECT.PROJECT_DETAILS_DEV_QA')
+    }
     var connectResponse = await rp({
       uri: config.get('CONNECT.CREATE_PROJECT'),
       method: 'POST',
@@ -203,18 +214,7 @@ async function handleProjectNameDialogSubmission (payload) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${process.env.CONNECT_BEARER_TOKEN}`
       },
-      body: {
-        param: {
-          name: projectName,
-          description: project.description,
-          type: config.get('CONNECT.PROJECT_TYPE'),
-          templateId: config.get('CONNECT.CONNECT_TEMPLATE_ID'),
-          version: config.get('CONNECT.CONNECT_VERSION'),
-          estimation: [],
-          attachments: [],
-          details: config.get('CONNECT.PROJECT_DETAILS_DEV_QA')
-        }
-      },
+      body: projectBody,
       json: true
     })
   } catch (e) {
@@ -227,7 +227,7 @@ async function handleProjectNameDialogSubmission (payload) {
   }
 
   // Check if valida id is returned
-  const connectProjectId = (((connectResponse || {}).result || {}).content || {}).id
+  const connectProjectId = (connectResponse || {}).id
   if (!connectProjectId) {
     logger.logFullError(connectResponse)
     return slackWebClient.chat.postMessage({

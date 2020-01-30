@@ -43,7 +43,8 @@ function getClientLambdaUri (platform) {
  */
 function getSnsClient () {
   return new AWS.SNS({
-    endpoint: process.env.SNS_ENDPOINT,
+    //use endpoint value when doing local setup
+    //endpoint: process.env.SNS_ENDPOINT,
     region: process.env.SNS_REGION
   })
 }

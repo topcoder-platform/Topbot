@@ -13,18 +13,32 @@ module.exports.handler = async event => {
   const body = JSON.parse(event.body)
 
   if (body.event && body.event.text) {
-    const snsClient = getSnsClient()
-    const arn = getArnForTopic(process.env.TC_SLACK_EVENTS_TOPIC)
-    snsClient.publish({
-      Message: event.body,
-      TopicArn: arn
-    }).send()
+    try {
+      const response = await publishSnsTopic(event.body)
+      console.log('Response : ', response)
+      return {
+        statusCode: HttpStatus.OK,
+        body: JSON.stringify({
+          challenge: body.challenge // Event subscription handler must respond with the challenge value
+        })
+      }
+    } catch (err) {
+      console.log('err : ', err)
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          message: 'Couldn\'t published the message due to an internal error.'
+        })
+      }
+    }
   }
+}
 
-  return {
-    statusCode: HttpStatus.OK,
-    body: JSON.stringify({
-      challenge: body.challenge // Event subscription handler must respond with the challenge value
-    })
+async function publishSnsTopic (data) {
+  const params = {
+    Message: data,
+    TopicArn: getArnForTopic(process.env.TC_SLACK_EVENTS_TOPIC)
   }
+  const snsClient = getSnsClient()
+  return snsClient.publish(params).promise()
 }

@@ -41,40 +41,24 @@ module.exports = {
   },
   // Topcoder Connect configurations
   CONNECT: {
-    CREATE_PROJECT: 'https://api.topcoder-dev.com/v4/projects',
-    INVITE_MEMBER: (projectId) => `https://api.topcoder-dev.com/v4/projects/${projectId}/members/invite`,
+    CREATE_PROJECT: 'https://api.topcoder-dev.com/v5/projects',
+    INVITE_MEMBER: (projectId) => `https://api.topcoder-dev.com/v5/projects/${projectId}/members/invite`,
     PROJECT_URI: (projectId) => `https://connect.topcoder-dev.com/projects/${projectId}`,
     PROJECT_TYPE: 'scoped-solutions',
     INVITE_ROLE: 'customer',
-    CONNECT_TEMPLATE_ID: 221,
+    CONNECT_TEMPLATE_ID: 101,
     CONNECT_VERSION: 'v3',
     PROJECT_DETAILS_DEV_QA: {
       intakePurpose: 'client-request',
       utm: {
-        code: 'topbot'
+          code: 'topbot'
       },
       appDefinition: {
-        deliverables: ['dev-qa'],
-        needAdditionalScreens: 'no',
-        targetDevices: ['mobile'],
-        mobilePlatforms: '',
-        addons: {
-          development: ''
-        }
+          qaType: 'real-world-unstructured',
+          unstructuredTestsScreenCount: 'upto-10',
+          caNeeded: 'yes'
       },
-      apiDefinition: {
-        notes: ''
-      },
-      techstack: {
-        hasLanguagesPref: false,
-        hasFrameworksPref: '',
-        hasDatabasePref: '',
-        hasServerPref: '',
-        hasHostingPref: '',
-        noPref: true,
-        sourceControl: '',
-        languages: ''
-      },
+      apiDefinition: {},
       hideDiscussions: true
     }
   }
