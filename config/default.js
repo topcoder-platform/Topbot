@@ -51,12 +51,12 @@ module.exports = {
     PROJECT_DETAILS_DEV_QA: {
       intakePurpose: 'client-request',
       utm: {
-          code: 'topbot'
+        code: 'topbot'
       },
       appDefinition: {
-          qaType: 'real-world-unstructured',
-          unstructuredTestsScreenCount: 'upto-10',
-          caNeeded: 'yes'
+        qaType: 'real-world-unstructured',
+        unstructuredTestsScreenCount: 'upto-10',
+        caNeeded: 'yes'
       },
       apiDefinition: {},
       hideDiscussions: true

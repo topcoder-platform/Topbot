@@ -18,7 +18,6 @@ module.exports.handler = async event => {
     }
   }
 
-
   try {
     const response = await publishSnsTopic(event.body)
     console.log('Response : ', response)

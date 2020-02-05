@@ -146,7 +146,7 @@ async function handlePostResponseDialogSubmission (payload) {
   } catch (e) {
     logger.logFullError(e)
     // If error, post error to TC Slack
-    //TODO update error message depending upon platform slack/teams
+    // TODO update error message depending upon platform slack/teams
     return slackWebClient.chat.postMessage({
       thread_ts: project.tcSlackThread,
       channel: process.env.CHANNEL,
