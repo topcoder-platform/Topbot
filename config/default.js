@@ -35,6 +35,7 @@ module.exports = {
   },
   // Winston log level
   LOG_LEVEL: 'error',
+  DISABLE_LAMBDA_DEBUG_LOGGING: false,
   // Common constants
   CONSTANTS: {
     PROJECT_DOES_NOT_EXIST: 'Project does not exist'

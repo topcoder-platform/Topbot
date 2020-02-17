@@ -11,7 +11,7 @@ const logger = require('../common/logger')
 
 const slackWebClient = getSlackWebClient()
 
-module.exports.handler = async event => {
+module.exports.handler = logger.traceFunction('accept.handler', async event => {
   try {
     // Validate schema
     const { error, value } = schema.acceptSchema.validate(JSON.parse(event.body))
@@ -64,4 +64,4 @@ module.exports.handler = async event => {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR
     }
   }
-}
+})

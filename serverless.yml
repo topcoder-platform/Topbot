@@ -5,6 +5,15 @@ provider:
   runtime: nodejs10.x
   profile: bot-dev
 
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'sns:Publish'
+        - 'sns:GetTopicAttributes'
+      Resource:
+        - !Ref tcSlackEvents
+        - !Ref tcSlackInteractive
+
   environment:
     # AWS configuration
     ACCESS_KEY_ID: FAKE_ACCESS_KEY_ID
@@ -13,10 +22,10 @@ provider:
     DYNAMODB_ENDPOINT: http://localhost:8000
 
     # TC Slack bot configuration
-    ADMIN_USER_TOKEN: xoxp-755656631591-747386116513-907833188438-f42f5df4230bcd906a8d100b5c46d6a3
-    BOT_TOKEN: xoxb-755656631591-905169374100-lPUJga4UDqIIRUyphZ7WBjnb
+    ADMIN_USER_TOKEN:
+    BOT_TOKEN:
     CHANNEL: general
-    CLIENT_SIGNING_SECRET: 16dc7aefe4fc58b91f5010bc170f5664
+    CLIENT_SIGNING_SECRET:
 
     # Slack Lambda configuration
     SLACK_LAMBDA_URI: 'http://localhost:3001'
@@ -25,16 +34,16 @@ provider:
     TEAMS_LAMBDA_URI: 'http://localhost:3002'
 
     # Topcoder connect configuration
-    CONNECT_BEARER_TOKEN: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJUb3Bjb2RlciBVc2VyIl0sImlzcyI6Imh0dHBzOi8vYXBpLnRvcGNvZGVyLWRldi5jb20iLCJoYW5kbGUiOiJ0b3Bib3QzIiwiZXhwIjoxNTgwNDUwNDAwLCJ1c2VySWQiOiI0MDE1OTAyMiIsImlhdCI6MTU3NTUxMTk3NywiZW1haWwiOiJiaWxsc2VkaXNvbisyQGdtYWlsLmNvbSJ9.hsRkUW5z3GMWdU1n6__opr7udzKqXV1RiHWiIZBHJSs
+    CONNECT_BEARER_TOKEN:
 
     # SNS Configuration
     SNS_ENDPOINT: http://localhost:4000 # local development only
-    SNS_REGION: us-west-2
+    SNS_REGION: ${self:custom.region}
     SNS_ACCOUNT_ID: 123456789012
 
     # SNS Topics
-    TC_SLACK_EVENTS_TOPIC: tc-slack-events
-    TC_SLACK_INTERACTIVE_TOPIC: tc-slack-interactive
+    TC_SLACK_EVENTS_TOPIC: ${self:custom.sns.tcSlackEvents}
+    TC_SLACK_INTERACTIVE_TOPIC: ${self:custom.sns.tcSlackInteractive}
 
 functions:
   tc_slack_events:
@@ -65,13 +74,17 @@ functions:
     handler: src/functions/events.handler
     description: Handles slack events
     events:
-      - sns: tc-slack-events
+      - sns:
+          arn: !Ref tcSlackEvents
+          topicName: ${self:custom.sns.tcSlackEvents}
 
   interactive:
     handler: src/functions/interactive.handler
     description: Handles slack interactive messages
     events:
-      - sns: tc-slack-interactive
+      - sns:
+          arn: !Ref tcSlackInteractive
+          topicName: ${self:custom.sns.tcSlackInteractive}
 
   accept:
     handler: src/functions/accept.handler
@@ -105,3 +118,18 @@ custom:
   serverless-offline-sns:
     port: 4000
     debug: false
+  sns:
+    tcSlackEvents: tc-slack-events
+    tcSlackInteractive: tc-slack-interactive
+  region: ${opt:region, self:provider.region}
+
+resources:
+  Resources:
+    tcSlackEvents:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:custom.sns.tcSlackEvents}
+    tcSlackInteractive:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:custom.sns.tcSlackInteractive}

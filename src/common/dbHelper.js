@@ -4,7 +4,9 @@
 
 const AWS = require('aws-sdk')
 const config = require('config')
+const logger = require('./logger')
 const projectsSchema = require('../tables/projects')
+
 let documentClient = null
 
 /**
@@ -19,11 +21,15 @@ async function initialize () {
   })
 
   const dynamodb = new AWS.DynamoDB()
-  // Create table if it does not exist already
-  const list = await dynamodb.listTables().promise()
-  if (!list.TableNames.includes(config.get('DYNAMODB.PROJECT_TABLE_NAME'))) {
-    await dynamodb.createTable(projectsSchema).promise()
-  }
+
+  const projectsTable = config.get('DYNAMODB.PROJECT_TABLE_NAME')
+  await dynamodb.createTable(projectsSchema).promise().catch((err) => {
+    if (err.code === 'ResourceInUseException') {
+      logger.warn(`Table already exists: ${projectsTable}`)
+    } else {
+      throw err
+    }
+  })
 
   documentClient = new AWS.DynamoDB.DocumentClient()
 }
@@ -126,6 +132,7 @@ async function getProject (projectId) {
 }
 
 module.exports = {
+  initialize,
   put,
   query,
   update,

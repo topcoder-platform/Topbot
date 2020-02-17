@@ -11,7 +11,7 @@ const logger = require('../common/logger')
 
 const slackWebClient = getSlackWebClient()
 
-module.exports.handler = async event => {
+module.exports.handler = logger.traceFunction('request.handler', async event => {
   // Validate request
   const { error, value } = schema.requestSchema.validate(JSON.parse(event.body))
   if (error) {
@@ -79,6 +79,7 @@ module.exports.handler = async event => {
           createdAt: new Date().toISOString(),
           status: config.get('PROJECT_STATUS.LAUNCHED'),
           teamsConversationId: value.teamsConversationId,
+          serviceUrl: value.serviceUrl,
           tcSlackThread: response.ts,
           platform: value.platform
         }
@@ -103,4 +104,4 @@ module.exports.handler = async event => {
     statusCode: HttpStatus.OK,
     body: JSON.stringify(project)
   }
-}
+})

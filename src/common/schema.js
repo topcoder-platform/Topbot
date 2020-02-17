@@ -27,6 +27,10 @@ const requestSchema = Joi.object({
     is: PLATFORMS.TEAMS,
     then: Joi.required()
   }),
+  serviceUrl: Joi.string().when('platform', {
+    is: PLATFORMS.TEAMS,
+    then: Joi.required()
+  }),
   platform: Joi.string().valid(PLATFORMS.SLACK, PLATFORMS.TEAMS).required()
 })
 
