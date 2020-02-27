@@ -12,17 +12,17 @@ Topbot uses Dynamodb to store/retrieve data and listens to SNS topics to obtain 
 
 If you already have dynamodb running, then you can skip the install and run steps 1 and 2
 
-1. Download and install dynamodb from [here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.DownloadingAndRunning.html)
+1. To install DynamoDB locally run `sls dynamodb install`.
 
-2. In terminal, navigate to the directory where you extracted DynamoDBLocal.jar, and enter the following command. `java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -sharedDb`. This will start dynamodb on port 8000 by default.
+2. To start DynamoDB run `sls dynamodb start --migrate`. This will automatically create tables and starts dynamodb on port 8000 by default.
 
 3. **ENV** Update `provider:environment:DYNAMODB_ENDPOINT` field in `serverless.yml` with the dynamodb port
 
 ```yml
 environment:
   # AWS configuration
-  ACCESS_KEY_ID: FAKE_ACCESS_KEY_ID
-  SECRET_ACCESS_KEY: FAKE_SECRET_ACCESS_KEY
+  ACCESS_KEY_ID: DEFAULT_ACCESS_KEY
+  SECRET_ACCESS_KEY: DEFAULT_SECRET
   REGION: FAKE_REGION
   DYNAMODB_ENDPOINT: http://localhost:8000 # This value
 ```
@@ -127,6 +127,7 @@ provider:
   name: aws
   runtime: nodejs10.x
   profile: bot-dev
+  stage: local
 
   environment:
     # AWS configuration

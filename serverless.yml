@@ -4,6 +4,7 @@ provider:
   name: aws
   runtime: nodejs10.x
   profile: bot-dev
+  stage: local # local development only
 
   iamRoleStatements:
     - Effect: 'Allow'
@@ -13,12 +14,30 @@ provider:
       Resource:
         - !Ref tcSlackEvents
         - !Ref tcSlackInteractive
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+      Resource:
+        - Fn::GetAtt: [ ProjectsTable, Arn ]
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+      Resource:
+        - Fn::GetAtt: [ ProjectsTable, Arn ]
 
   environment:
     # AWS configuration
-    ACCESS_KEY_ID: FAKE_ACCESS_KEY_ID
-    SECRET_ACCESS_KEY: FAKE_SECRET_ACCESS_KEY
-    REGION: FAKE_REGION
+    ACCESS_KEY_ID: DEFAULT_ACCESS_KEY
+    SECRET_ACCESS_KEY: DEFAULT_SECRET
+    REGION: localhost
     DYNAMODB_ENDPOINT: http://localhost:8000
 
     # TC Slack bot configuration
@@ -111,8 +130,9 @@ functions:
           method: post
 
 plugins:
-  - serverless-offline
   - serverless-offline-sns
+  - serverless-dynamodb-local
+  - serverless-offline
 
 custom:
   serverless-offline-sns:
@@ -121,6 +141,9 @@ custom:
   sns:
     tcSlackEvents: tc-slack-events
     tcSlackInteractive: tc-slack-interactive
+  dynamodb:
+    stages:
+      - local
   region: ${opt:region, self:provider.region}
 
 resources:
@@ -133,3 +156,80 @@ resources:
       Type: AWS::SNS::Topic
       Properties:
         TopicName: ${self:custom.sns.tcSlackInteractive}
+    Test:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: test
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    ProjectsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: projects
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: clientSlackThread
+            AttributeType: S
+          - AttributeName: teamsConversationId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: client_slack_thread_index
+            KeySchema:
+              - AttributeName: clientSlackThread
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+          - IndexName: teams_conversation_id_index
+            KeySchema:
+              - AttributeName: teamsConversationId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+    ClientsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: slack_clients
+        AttributeDefinitions:
+          - AttributeName: teamId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: teamId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+  Outputs:
+    ProjectsTableArn:
+      Value:
+        Fn::GetAtt:
+          - ProjectsTable
+          - Arn
+      Export:
+        Name: ProjectsTableArn
+    ClientsTableArn:
+      Value:
+        Fn::GetAtt:
+          - ClientsTable
+          - Arn
+      Export:
+        Name: ClientsTableArn

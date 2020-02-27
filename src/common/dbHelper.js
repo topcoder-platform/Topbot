@@ -4,8 +4,6 @@
 
 const AWS = require('aws-sdk')
 const config = require('config')
-const logger = require('./logger')
-const projectsSchema = require('../tables/projects')
 
 let documentClient = null
 
@@ -18,17 +16,6 @@ async function initialize () {
     accessKeyId: process.env.ACCESS_KEY_ID,
     secretAccessKey: process.env.SECRET_ACCESS_KEY,
     endpoint: process.env.DYNAMODB_ENDPOINT
-  })
-
-  const dynamodb = new AWS.DynamoDB()
-
-  const projectsTable = config.get('DYNAMODB.PROJECT_TABLE_NAME')
-  await dynamodb.createTable(projectsSchema).promise().catch((err) => {
-    if (err.code === 'ResourceInUseException') {
-      logger.warn(`Table already exists: ${projectsTable}`)
-    } else {
-      throw err
-    }
   })
 
   documentClient = new AWS.DynamoDB.DocumentClient()
