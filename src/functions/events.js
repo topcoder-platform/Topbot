@@ -35,10 +35,10 @@ async function handleCommand (command, body) {
   }
 }
 
-module.exports.handler = async event => {
+module.exports.handler = logger.traceFunction('events.handler', async event => {
   if (event && event.Records && event.Records[0] && event.Records[0].Sns) {
     const body = JSON.parse(event.Records[0].Sns.Message)
     const command = body.event.text.replace(commandTextRegex, '').trim().toLowerCase()
     await handleCommand(command, body)
   }
-}
+})

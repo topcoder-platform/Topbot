@@ -11,7 +11,7 @@ const logger = require('../common/logger')
 const INTERACTIVE_MESSAGE_TYPES = config.get('INTERACTIVE_MESSAGE_TYPES')
 const slackWebClient = getSlackWebClient()
 
-module.exports.handler = async event => {
+module.exports.handler = logger.traceFunction('interactive.handler', async event => {
   try {
     if (event && event.Records && event.Records[0] && event.Records[0].Sns) {
       // event.Records[0].Sns.Message is a URL encoded string
@@ -54,7 +54,7 @@ module.exports.handler = async event => {
       text: 'An error occured. Please try again'
     })
   }
-}
+})
 
 /**
  * Opens a dialog when "Post a response" button is clicked

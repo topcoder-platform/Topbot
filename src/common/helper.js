@@ -91,6 +91,6 @@ module.exports = {
   reflect,
   getClientLambdaUri,
   getSnsClient,
-  getArnForTopic,
-  authenticateSlackRequest
+  authenticateSlackRequest,
+  getArnForTopic
 }

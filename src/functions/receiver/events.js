@@ -1,7 +1,8 @@
 const HttpStatus = require('http-status-codes')
 const { authenticateSlackRequest, getSnsClient, getArnForTopic } = require('../../common/helper')
+const logger = require('../../common/logger')
 
-module.exports.handler = async event => {
+module.exports.handler = logger.traceFunction('receiver.events.handler', async event => {
   const isValidRequest = authenticateSlackRequest(event, process.env.CLIENT_SIGNING_SECRET)
 
   if (!isValidRequest) {
@@ -11,6 +12,15 @@ module.exports.handler = async event => {
   }
 
   const body = JSON.parse(event.body)
+
+  if (body.type === 'url_verification') {
+    return {
+      statusCode: HttpStatus.OK,
+      body: JSON.stringify({
+        challenge: body.challenge
+      })
+    }
+  }
 
   if (body.event && body.event.text) {
     try {
@@ -23,7 +33,7 @@ module.exports.handler = async event => {
         })
       }
     } catch (err) {
-      console.log('err : ', err)
+      logger.logFullError(err)
       return {
         statusCode: 500,
         body: JSON.stringify({
@@ -32,7 +42,7 @@ module.exports.handler = async event => {
       }
     }
   }
-}
+})
 
 async function publishSnsTopic (data) {
   const params = {

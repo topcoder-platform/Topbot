@@ -4,7 +4,7 @@
 
 const AWS = require('aws-sdk')
 const config = require('config')
-const projectsSchema = require('../tables/projects')
+
 let documentClient = null
 
 /**
@@ -17,13 +17,6 @@ async function initialize () {
     secretAccessKey: process.env.SECRET_ACCESS_KEY,
     endpoint: process.env.DYNAMODB_ENDPOINT
   })
-
-  const dynamodb = new AWS.DynamoDB()
-  // Create table if it does not exist already
-  const list = await dynamodb.listTables().promise()
-  if (!list.TableNames.includes(config.get('DYNAMODB.PROJECT_TABLE_NAME'))) {
-    await dynamodb.createTable(projectsSchema).promise()
-  }
 
   documentClient = new AWS.DynamoDB.DocumentClient()
 }
@@ -126,6 +119,7 @@ async function getProject (projectId) {
 }
 
 module.exports = {
+  initialize,
   put,
   query,
   update,
