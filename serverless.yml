@@ -157,19 +157,6 @@ resources:
       Type: AWS::SNS::Topic
       Properties:
         TopicName: ${self:custom.sns.tcSlackInteractive}
-    Test:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: test
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
     ProjectsTable:
       Type: AWS::DynamoDB::Table
       Properties:
