@@ -1,4 +1,4 @@
-service: centralBotLambda
+service: BotLambda
 
 provider:
   name: aws
@@ -15,6 +15,19 @@ provider:
       Resource:
         - !Ref tcSlackEvents
         - !Ref tcSlackInteractive
+    - Effect: 'Allow'
+      Action:
+        - 'sns:Publish'
+        - 'sns:GetTopicAttributes'
+      Resource:
+        - !Ref clientSlackEvents
+        - !Ref clientSlackInteractive
+    - Effect: 'Allow'
+      Action:
+        - 'sns:Publish'
+        - 'sns:GetTopicAttributes'
+      Resource:
+        - !Ref clientTeamsEvents
     - Effect: Allow
       Action:
         - dynamodb:Query
@@ -32,7 +45,7 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
       Resource:
-        - Fn::GetAtt: [ ProjectsTable, Arn ]
+        - Fn::GetAtt: [ ClientsTable, Arn ]
 
   environment:
     # AWS configuration
@@ -42,92 +55,208 @@ provider:
     DYNAMODB_ENDPOINT: http://localhost:8000
 
     # TC Slack bot configuration
-    ADMIN_USER_TOKEN:
-    BOT_TOKEN:
-    CHANNEL: general
-    CLIENT_SIGNING_SECRET:
+    TC_SLACK_ADMIN_USER_TOKEN:
+    TC_SLACK_BOT_TOKEN:
+    TC_SLACK_CHANNEL: general
+    TC_SLACK_CLIENT_SIGNING_SECRET:
+
+    #Client Slack bot configuration
+    CLIENT_SLACK_CLIENT_ID: '975588202308.977950798967'
+    CLIENT_SLACK_CLIENT_SECRET: 16ce0c08e36b5f25f2d59f203ad619a4
+    CLIENT_SLACK_CLIENT_SIGNING_SECRET: ddbb0250f410b208e8c2f2fb40e88105
+    CLIENT_SLACK_ADD_TO_SLACK_BUTTON: '<a href="https://slack.com/oauth/authorize?client_id=975588202308.977950798967&scope=bot,channels:write,users:read"><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"></a>'
+
+    # MS Teams bot configuration
+    CLIENT_TEAMS_APP_ID: 47151b97-d9e4-46ce-b338-9bd960b0d129
+    CLIENT_TEAMS_APP_PASSWORD: 'GJiDY9clavNLWf?LNfsYQ32dh1:.sum='
+
+    # 128 bit Token encryption/decryption key used by Database. You can set this to any string (128 bit) or just use the default value provided here
+    CRYPTO_KEY: 'p3s6v9y$B&E(H+Mb'
+
+    # Lambda URI
+    LAMBDA_URI: ${self:custom.lambda_uri}
 
     # Slack Lambda configuration
-    SLACK_LAMBDA_URI: 'http://localhost:3001'
+    SLACK_LAMBDA_URI: ${self:custom.lambda_uri}/client-slack
 
     # Teams lambda configuration
-    TEAMS_LAMBDA_URI: 'http://localhost:3002'
+    TEAMS_LAMBDA_URI: ${self:custom.lambda_uri}/client-teams
 
     # Topcoder connect configuration
-    CONNECT_BEARER_TOKEN:
+    CONNECT_BEARER_TOKEN: sample_connect_bearer_tokeniJKV1QiLCJhbGciOiJI.eyJyb2xlcyI6WyJUb3Bjb2RlciBVc2VyIl0sImlzcyI6Imh0dHBzOi8vYXBpLnRvcGNvZGVyLWRldi5jb20iLsample_connect_bearer_tokenIiwiZXhwIjoxNTsample_connect_bearer_tokenQiOiI0MDE1Osample_connect_bearer_tokenMTU3NTUxMTk3NywiZW1haWwiOiJiaWxsc2Vksample_connect_bearer_token.-ZJHFCqxgvdCeyx9sample_connect_bearer_tokenCk
 
     # SNS Configuration
-    SNS_ENDPOINT: http://localhost:4000 # local development only
     SNS_REGION: ${self:custom.region}
     SNS_ACCOUNT_ID: 123456789012
+    SNS_ENDPOINT: http://localhost:4000 # local development only
 
-    # SNS Topics
+    # TC Slack SNS Topics
     TC_SLACK_EVENTS_TOPIC: ${self:custom.sns.tcSlackEvents}
     TC_SLACK_INTERACTIVE_TOPIC: ${self:custom.sns.tcSlackInteractive}
 
+    # Client Slack SNS Topics
+    CLIENT_SLACK_EVENTS_TOPIC: ${self:custom.sns.clientSlackEvents}
+    CLIENT_SLACK_EVENTS_INTERACTIVE: ${self:custom.sns.clientSlackInteractive}
+
+    # MS Teams SNS Topics
+    CLIENT_TEAMS_EVENTS_TOPIC: ${self:custom.sns.clientTeamsEvents}
 functions:
   tc_slack_events:
-    handler: src/functions/receiver/events.handler
+    handler: src/tc-slack/functions/receiver/events.handler
     description: Handles slack events from TC Slack
     events:
       - http:
-          path: slack/events
+          path: tc-slack/events
           method: post
 
   tc_slack_interactive:
-    handler: src/functions/receiver/interactive.handler
+    handler: src/tc-slack/functions/receiver/interactive.handler
     description: Handles slack interactive messages from TC Slack
     events:
       - http:
-          path: slack/interactive
+          path: tc-slack/interactive
           method: post
 
-  request:
-    handler: src/functions/request.handler
+  client_slack_events:
+    handler: src/client-slack/functions/receiver/events.handler
+    description: Handles slack events from Client Slack
+    events:
+      - http:
+          path: client-slack/events
+          method: post
+
+  client_slack_interactive:
+    handler: src/client-slack/functions/receiver/interactive.handler
+    description: Handles slack interactive messages from Client Slack
+    events:
+      - http:
+          path: client-slack/interactive
+          method: post
+
+  tc_slack_request:
+    handler: src/tc-slack/functions/request.handler
     description: Create a project with description
     events:
       - http:
-          path: request
+          path: tc-slack/request
           method: post
 
-  events:
-    handler: src/functions/events.handler
+  tc_slack_sns_events:
+    handler: src/tc-slack/functions/events.handler
     description: Handles slack events
     events:
       - sns:
           arn: !Ref tcSlackEvents
           topicName: ${self:custom.sns.tcSlackEvents}
 
-  interactive:
-    handler: src/functions/interactive.handler
+  tc_slack_sns_interactive:
+    handler: src/tc-slack/functions/interactive.handler
     description: Handles slack interactive messages
     events:
       - sns:
           arn: !Ref tcSlackInteractive
           topicName: ${self:custom.sns.tcSlackInteractive}
 
-  accept:
-    handler: src/functions/accept.handler
+  tc_slack_accept:
+    handler: src/tc-slack/functions/accept.handler
     description: Handles project accept
     events:
       - http:
-          path: accept
+          path: tc-slack/accept
           method: post
 
-  decline:
-    handler: src/functions/decline.handler
+  tc_slack_decline:
+    handler: src/tc-slack/functions/decline.handler
     description: Handles project decline
     events:
       - http:
-          path: decline
+          path: tc-slack/decline
           method: post
 
-  invite:
-    handler: src/functions/invite.handler
+  tc_slack_invite:
+    handler: src/tc-slack/functions/invite.handler
     description: Handles project invite
     events:
       - http:
-          path: invite
+          path: tc-slack/invite
+          method: post
+  client_slack_sns_events:
+    handler: src/client-slack/functions/events.handler
+    description: Handles slack events
+    events:
+      - sns:
+          arn: !Ref clientSlackEvents
+          topicName: ${self:custom.sns.clientSlackEvents}
+
+  client_slack_sns_interactive:
+    handler: src/client-slack/functions/interactive.handler
+    description: Handles interactive components
+    events:
+      - sns:
+          arn: !Ref clientSlackInteractive
+          topicName: ${self:custom.sns.clientSlackInteractive}
+
+  client_slack_response:
+    handler: src/client-slack/functions/response.handler
+    description: Handles project response
+    events:
+      - http:
+          path: client-slack/response
+          method: post
+
+  client_slack_approve:
+    handler: src/client-slack/functions/approve.handler
+    description: Receives project approve
+    events:
+      - http:
+          path: client-slack/approve
+          method: post
+
+  client_slack_signIn:
+    handler: src/client-slack/functions/signIn.handler
+    description: Returns the Add to slack button to sign in
+    events:
+      - http:
+          path: client-slack/signin
+          method: get
+
+  client_slack_auth:
+    handler: src/client-slack/functions/auth.handler
+    description: Handles oauth redirect
+    events:
+      - http:
+          path: client-slack/auth/redirect
+          method: get
+  client_teams_events:
+    handler: src/client-teams/functions/receiver/events.handler
+    description: Handles ms teams events
+    events:
+      - http:
+          path: client-teams/events
+          method: post
+
+  client_teams_sns_events:
+    handler: src/client-teams/functions/events.handler
+    description: Handles ms teams events
+    events:
+      - sns:
+          arn: !Ref clientTeamsEvents
+          topicName: ${self:custom.sns.clientTeamsEvents}
+
+  client_teams_response:
+    handler: src/client-teams/functions/response.handler
+    description: Handles project response
+    events:
+      - http:
+          path: client-teams/response
+          method: post
+
+  client_teams_approve:
+    handler: src/client-teams/functions/approve.handler
+    description: Receives project approve
+    events:
+      - http:
+          path: client-teams/approve
           method: post
 
 plugins:
@@ -136,12 +265,16 @@ plugins:
   - serverless-offline
 
 custom:
+  lambda_uri: 'http://localhost:3000'
   serverless-offline-sns:
     port: 4000
     debug: false
   sns:
     tcSlackEvents: tc-slack-events
     tcSlackInteractive: tc-slack-interactive
+    clientSlackEvents: client-slack-events
+    clientSlackInteractive: client-slack-interactive
+    clientTeamsEvents: client-teams-events
   dynamodb:
     stages:
       - local
@@ -157,6 +290,18 @@ resources:
       Type: AWS::SNS::Topic
       Properties:
         TopicName: ${self:custom.sns.tcSlackInteractive}
+    clientSlackEvents:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:custom.sns.clientSlackEvents}
+    clientSlackInteractive:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:custom.sns.clientSlackInteractive}
+    clientTeamsEvents:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:custom.sns.clientTeamsEvents}
     ProjectsTable:
       Type: AWS::DynamoDB::Table
       Properties:

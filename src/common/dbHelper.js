@@ -118,6 +118,50 @@ async function getProject (projectId) {
   })).Items[0])
 }
 
+/**
+ * Get project by the thread that it was launched in by the client
+ * @param {String} clientSlackThread
+ */
+async function getProjectByClientSlackThread (clientSlackThread) {
+  return ((await query({
+    TableName: config.get('DYNAMODB.PROJECT_TABLE_NAME'),
+    IndexName: config.get('DYNAMODB.CLIENT_SLACK_THREAD_INDEX'),
+    KeyConditionExpression: 'clientSlackThread = :c',
+    ExpressionAttributeValues: {
+      ':c': clientSlackThread
+    }
+  })).Items[0])
+}
+
+/**
+ * Returns the client by team id
+ * @param {String} teamId
+ */
+async function getClientByTeamId (teamId) {
+  return ((await query({
+    TableName: config.get('DYNAMODB.SLACK_CLIENTS_TABLE_NAME'),
+    KeyConditionExpression: 'teamId = :teamIdVal',
+    ExpressionAttributeValues: {
+      ':teamIdVal': teamId
+    }
+  })).Items[0])
+}
+
+/**
+ * Get project by the teams conversation id that it was launched in by the client
+ * @param {String} teamsConversationId
+ */
+async function getProjectByTeamsConversationId (teamsConversationId) {
+  return ((await query({
+    TableName: config.get('DYNAMODB.PROJECT_TABLE_NAME'),
+    IndexName: config.get('DYNAMODB.TEAMS_CONVERSATION_ID_INDEX'),
+    KeyConditionExpression: 'teamsConversationId = :t',
+    ExpressionAttributeValues: {
+      ':t': teamsConversationId
+    }
+  })).Items[0])
+}
+
 module.exports = {
   initialize,
   put,
@@ -125,5 +169,8 @@ module.exports = {
   update,
   updateProjectStatus,
   getProject,
-  updateProjectWithConnectAndApprove
+  updateProjectWithConnectAndApprove,
+  getProjectByClientSlackThread,
+  getClientByTeamId,
+  getProjectByTeamsConversationId
 }

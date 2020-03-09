@@ -19,20 +19,28 @@ module.exports = {
   // Dynamodb table and index names
   DYNAMODB: {
     PROJECT_TABLE_NAME: 'projects',
+    SLACK_CLIENTS_TABLE_NAME: 'slack_clients',
     CLIENT_SLACK_THREAD_INDEX: 'client_slack_thread_index',
     TEAMS_CONVERSATION_ID_INDEX: 'teams_conversation_id_index'
   },
-  // Supported commands received as events
-  COMMANDS: {
-    HELP: 'help'
-  },
+
   // Names of interactive components
   INTERACTIVE_MESSAGE_TYPES: {
     POST_RESPONSE: 'postResponse',
     TEXT_AREA_POST_RESPONSE: 'postResponseTextArea',
     TEXT_AREA_PROJECT_NAME: 'projectNameTextArea',
-    APPROVE: 'approve'
+    ACCEPT: 'accept',
+    APPROVE: 'approve',
+    DECLINE: 'decline'
   },
+
+  // Supported commands received as events
+  COMMANDS: {
+    HELP: 'help',
+    REQUEST: 'request',
+    EMAIL: 'email'
+  },
+
   // Winston log level
   LOG_LEVEL: 'error',
   DISABLE_LAMBDA_DEBUG_LOGGING: false,

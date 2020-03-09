@@ -4,7 +4,7 @@
 
 Central TC acts as a bridge between TC Slack and Client Slack Lambda or Client MS Teams Lambda
 
-![](docs/images/architecture.png)
+![](docs/tc-slack/images/architecture.png)
 
 ## Deployment Guide
 
@@ -16,7 +16,11 @@ Follow instructions in [Verification Guide](docs/VerificationGuide.md)
 
 ## Swagger documentation
 
-REST API's are documented in [swagger.yaml](docs/swagger/swagger.yaml)
+TC Slack REST API's are documented in [swagger.yaml](docs/tc-slack/swagger/swagger.yaml)
+
+Client Slack REST API's are documented in [swagger.yaml](docs/client-slack/swagger/swagger.yaml)
+
+Clinet MS Teams REST API's are documented in [swagger.yaml](docs/client-teams/swagger/swagger.yaml)
 
 ## DynamoDB database description
 
