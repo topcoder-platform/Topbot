@@ -4,7 +4,7 @@
 const HttpStatus = require('http-status-codes')
 const uuid = require('uuid/v4')
 const config = require('config')
-const schema = require('../common/schema')
+const schema = require('../../common/schema')
 const { put } = require('../../common/dbHelper')
 const { getSlackWebClient } = require('../common/helper')
 const logger = require('../../common/logger')

@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-TC Central is configured and running. It needs to have the endpoint exposed by ngrok. It also need events and interactive component endpoints configured in Slack.
+TC Central is configured and running. It needs to have the public endpoint. It also need events and interactive component endpoints configured in Slack.
 
 ## Setup TC workspace
 

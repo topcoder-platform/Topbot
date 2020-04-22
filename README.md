@@ -1,14 +1,55 @@
-# Topbot - Central TC Lambda
+# Topbots
 
 ## Overview
 
 Central TC acts as a bridge between TC Slack and Client Slack Lambda or Client MS Teams Lambda
 
-![](docs/tc-slack/images/architecture.png)
+![](docs/images/architecture.png)
+
+## Local vs public settings
+The 'local' column describes values for local development only.
+The 'public' column describes values for deploying with the custom domain on AWS .
+Some values are required in `serverless.xml`.These values are marked as <VALUE_REQUIRED>.
+The value marked as <NOT_USED> might be set an empty string.
+
+You need AWS Account to deploy TopBot on AWS. Sign Up & [create a new account](http://aws.amazon.com/).
+
+**AWS_KEY_ID** - Go to your [AWS account overview](https://console.aws.amazon.com/). Account menu in the upper-right (has your name on it). Click on the `Security Credentials` sub-menu.
+**AWS_SECRET_ACCESS_KEY**
+**AWS_ACCOUNT_ID** - Go to your [AWS account overview](https://console.aws.amazon.com/). Account menu in the upper-right (has your name on it). Click on the `MyAccount` sub-menu.
+
+
+| Name              	             | local               	       |  public             	| Description       	|
+|----------------------------------- |---------------------------- |----------------------- |---------------------- |
+| stage              	             | local  	                   |  dev         	        |   	                |
+| region   	                         | us-east-1                   |  us-east-1             | AWS_REGION   	        |
+| ACCESS_KEY_ID   	                 | DEFAULT_ACCESS_KEY          |  <VALUE_REQUIRED>      | AWS_KEY_ID  	        |
+| SECRET_ACCESS_KEY  	             | DEFAULT_SECRET  	           |  <VALUE_REQUIRED>  	| AWS_SECRET_ACCESS_KEY |
+| REGION   	                         | localhost  	               | ${self:custom.region}  |   	|
+| DYNAMODB_ENDPOINT  	             | http://localhost:8000  	   | <NOT_USED>             |  	    |
+| TC_SLACK_ADMIN_USER_TOKEN   	     | <VALUE_REQUIRED>  	       | <VALUE_REQUIRED>   	|   	|
+| TC_SLACK_BOT_TOKEN  	             | <VALUE_REQUIRED>  	       | <VALUE_REQUIRED>   	|   	|
+| TC_SLACK_CHANNEL   	             | general  	               | general   	            |    	|
+| TC_SLACK_CLIENT_SIGNING_SECRET  	 | <VALUE_REQUIRED>   	       | <VALUE_REQUIRED>   	|   	|
+| CLIENT_SLACK_CLIENT_ID   	         | <VALUE_REQUIRED>  	       | <VALUE_REQUIRED>   	|   	|
+| CLIENT_SLACK_CLIENT_SECRET         | <VALUE_REQUIRED>  	       | <VALUE_REQUIRED>   	|   	|
+| CLIENT_SLACK_CLIENT_SIGNING_SECRET | <VALUE_REQUIRED>  	       | <VALUE_REQUIRED>   	|   	|
+| CLIENT_SLACK_ADD_TO_SLACK_BUTTON   | <VALUE_REQUIRED>  	       | <VALUE_REQUIRED>   	|   	|
+| CLIENT_TEAMS_APP_ID           	 | <VALUE_REQUIRED>            | <VALUE_REQUIRED>   	|   	|
+| CONNECT_BEARER_TOKEN 	             | <VALUE_REQUIRED>  	       | <VALUE_REQUIRED>   	|   	|
+| SNS_ACCOUNT_ID  	                 | 123456789012  	           | <VALUE_REQUIRED>   	| AWS_ACCOUNT_ID   	|
+| SNS_ENDPOINT  	                 | http://localhost:4000  	   | <NOT_USED>         	|       |
+| **********  	                     |   	                       |                        |   	|
+| custom  	                         |   	                       |   	                    |   	|
+| **********  	                     |   	                       |                        |   	|
+| lambda_uri  	                     | 'http://localhost:3000'     | <VALUE_REQUIRED>  	    | E.g. 'https://mysite.com' |
+| domainName  	                     | <NOT_USED>  	               | <VALUE_REQUIRED>       | E.g. mysite.com  	|
 
 ## Deployment Guide
 
-Follow instructions in [Deployment Guide](docs/DeploymentGuide.md)
+Follow instructions in [Deployment Guide](docs/DeploymentGuide.md) to deploy locally.
+
+Follow instructions in [Deployment Guide With Custom Domain](docs/DeploymentGuideWithCustomDomain.md) to deploy in AWS Account.
 
 ## Verification Guide
 
@@ -81,4 +122,3 @@ These operations might take more than 3 seconds at times
 The solution seems to be to have one lambda function call another using something like AWS SNS
 
 See https://stackoverflow.com/questions/31714788/can-an-aws-lambda-function-call-another
-

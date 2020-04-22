@@ -4,8 +4,8 @@ provider:
   name: aws
   runtime: nodejs10.x
   profile: bot-dev
-  stage: local # local development only
-  region: us-east-1
+  stage: ${opt:stage, 'local'}
+  region: ${env:REGION}
 
   iamRoleStatements:
     - Effect: 'Allow'
@@ -49,31 +49,32 @@ provider:
 
   environment:
     # AWS configuration
-    ACCESS_KEY_ID: DEFAULT_ACCESS_KEY
-    SECRET_ACCESS_KEY: DEFAULT_SECRET
-    REGION: localhost
-    DYNAMODB_ENDPOINT: http://localhost:8000
+    ACCESS_KEY_ID: ${env:ACCESS_KEY_ID}
+    SECRET_ACCESS_KEY: ${env:SECRET_ACCESS_KEY}
+    REGION: ${self:custom.region}
+    DYNAMODB_ENDPOINT: ${env:DYNAMODB_ENDPOINT,''} # local development only.
 
     # TC Slack bot configuration
-    TC_SLACK_ADMIN_USER_TOKEN:
-    TC_SLACK_BOT_TOKEN:
-    TC_SLACK_CHANNEL: general
-    TC_SLACK_CLIENT_SIGNING_SECRET:
+    TC_SLACK_ADMIN_USER_TOKEN: ${env:TC_SLACK_ADMIN_USER_TOKEN}
+    TC_SLACK_BOT_TOKEN: ${env:TC_SLACK_BOT_TOKEN}
+    TC_SLACK_CHANNEL: ${env:TC_SLACK_CHANNEL}
+    TC_SLACK_CLIENT_SIGNING_SECRET: ${env:TC_SLACK_CLIENT_SIGNING_SECRET}
 
     #Client Slack bot configuration
-    CLIENT_SLACK_CLIENT_ID: '975588202308.977950798967'
-    CLIENT_SLACK_CLIENT_SECRET: 16ce0c08e36b5f25f2d59f203ad619a4
-    CLIENT_SLACK_CLIENT_SIGNING_SECRET: ddbb0250f410b208e8c2f2fb40e88105
-    CLIENT_SLACK_ADD_TO_SLACK_BUTTON: '<a href="https://slack.com/oauth/authorize?client_id=975588202308.977950798967&scope=bot,channels:write,users:read"><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"></a>'
+    CLIENT_SLACK_CLIENT_ID: ${env:CLIENT_SLACK_CLIENT_ID} # use single quotes(') to wrap a value
+    CLIENT_SLACK_CLIENT_SECRET: ${env:CLIENT_SLACK_CLIENT_SECRET}
+    CLIENT_SLACK_CLIENT_SIGNING_SECRET: ${env:CLIENT_SLACK_CLIENT_SIGNING_SECRET}
+    CLIENT_SLACK_ADD_TO_SLACK_BUTTON: ${env:CLIENT_SLACK_ADD_TO_SLACK_BUTTON} # use single quotes(') to wrap a value
 
     # MS Teams bot configuration
-    CLIENT_TEAMS_APP_ID: 47151b97-d9e4-46ce-b338-9bd960b0d129
-    CLIENT_TEAMS_APP_PASSWORD: 'GJiDY9clavNLWf?LNfsYQ32dh1:.sum='
+    CLIENT_TEAMS_APP_ID: ${env:CLIENT_TEAMS_APP_ID}
+    CLIENT_TEAMS_APP_PASSWORD: ${env:CLIENT_TEAMS_APP_PASSWORD} # use single quotes(') to wrap a value
 
     # 128 bit Token encryption/decryption key used by Database. You can set this to any string (128 bit) or just use the default value provided here
-    CRYPTO_KEY: 'p3s6v9y$B&E(H+Mb'
+    CRYPTO_KEY: ${env:CRYPTO_KEY}
 
     # Lambda URI
+    CLOUDWATCH_LOGGING_ERRORS: ${env:CLOUDWATCH_LOGGING_ERRORS, false}
     LAMBDA_URI: ${self:custom.lambda_uri}
 
     # Slack Lambda configuration
@@ -83,12 +84,12 @@ provider:
     TEAMS_LAMBDA_URI: ${self:custom.lambda_uri}/client-teams
 
     # Topcoder connect configuration
-    CONNECT_BEARER_TOKEN: sample_connect_bearer_tokeniJKV1QiLCJhbGciOiJI.eyJyb2xlcyI6WyJUb3Bjb2RlciBVc2VyIl0sImlzcyI6Imh0dHBzOi8vYXBpLnRvcGNvZGVyLWRldi5jb20iLsample_connect_bearer_tokenIiwiZXhwIjoxNTsample_connect_bearer_tokenQiOiI0MDE1Osample_connect_bearer_tokenMTU3NTUxMTk3NywiZW1haWwiOiJiaWxsc2Vksample_connect_bearer_token.-ZJHFCqxgvdCeyx9sample_connect_bearer_tokenCk
+    CONNECT_BEARER_TOKEN: ${env:CONNECT_BEARER_TOKEN}
 
     # SNS Configuration
     SNS_REGION: ${self:custom.region}
-    SNS_ACCOUNT_ID: 123456789012
-    SNS_ENDPOINT: http://localhost:4000 # local development only
+    SNS_ACCOUNT_ID: ${env:ACCOUNT_ID, ''}
+    SNS_ENDPOINT: ${env:SNS_ENDPOINT_HOST, ''}:${env:SNS_ENDPOINT_PORT,''} # local development only
 
     # TC Slack SNS Topics
     TC_SLACK_EVENTS_TOPIC: ${self:custom.sns.tcSlackEvents}
@@ -260,14 +261,16 @@ functions:
           method: post
 
 plugins:
+  - serverless-dotenv-plugin
   - serverless-offline-sns
   - serverless-dynamodb-local
+  - serverless-domain-manager
   - serverless-offline
 
 custom:
-  lambda_uri: 'http://localhost:3000'
+  lambda_uri: ${env:LAMBDA_URL,'https://${self:custom.customDomain.domainName}'}
   serverless-offline-sns:
-    port: 4000
+    port:  ${env:SNS_ENDPOINT_PORT,''}
     debug: false
   sns:
     tcSlackEvents: tc-slack-events
@@ -279,7 +282,11 @@ custom:
     stages:
       - local
   region: ${opt:region, self:provider.region}
-
+  customDomain:
+    domainName: ${env:CUSTOM_DOMAIN_NAME,''}
+    basePath: ''
+    stage: ${self:provider.stage}
+    createRoute53Record: true
 resources:
   Resources:
     tcSlackEvents:
