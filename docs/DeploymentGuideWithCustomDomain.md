@@ -12,8 +12,8 @@ In short, it includes 3 steps:
 
 ## Environment file
 You should use the 'dev' stage  for the development. The environment file called '.env.dev' will be used.
-You should enter all required parameters in this files. Don't change any values in serverless.xml.
-You can create an env file'.env.mystage' and run all commands with the '--stage=mystage' option.
+You should enter all required parameters in this file. Don't change any values in serverless.xml.
+You can copy 'env.dev' save as '.env.mystage' and run all commands with the '--stage=mystage' option.
 Don't name your stage as 'local' it's reserved for local development.
 
 ## Register a custom domain name
