@@ -108,7 +108,7 @@ If you just added your name in Step 2, you need to wait a couple of hours before
 
 ![](../images/teams/add_ms_bot.png)
 
-7. **ENV** Under `App passwords` click `Generate new password`. Copy this value to `serverless.yml` -> `# Client Teams bot configuration` -> `APP_PASSWORD`. If the password contains special characters, enclose it in quotes. e.g. `APP_PASSWORD: 'Jips0:0JPN.B-kSuSZG3XWza8I:aFnE:'`
+7. **ENV** `Capabilities` -> `Bots` -> `App passwords` click `Generate new password`. Copy this value to `serverless.yml` -> `# Client Teams bot configuration` -> `APP_PASSWORD`. If the password contains special characters, enclose it in quotes. e.g. `APP_PASSWORD: 'Jips0:0JPN.B-kSuSZG3XWza8I:aFnE:'`
 
 ### Lambdas setup
 
