@@ -51,7 +51,8 @@ module.exports = {
   // Topcoder Connect configurations
   CONNECT: {
     CREATE_PROJECT: 'https://api.topcoder-dev.com/v5/projects',
-    INVITE_MEMBER: (projectId) => `https://api.topcoder-dev.com/v5/projects/${projectId}/members/invite`,
+    INVITE_MEMBER: (projectId) => `https://api.topcoder-dev.com/v5/projects/${projectId}/invites/?fields=`,
+    INVITE_MEMBER_FIELDS: 'id,projectId,userId,email,role,status,createdAt,updatedAt,createdBy,updatedBy,handle',
     PROJECT_URI: (projectId) => `https://connect.topcoder-dev.com/projects/${projectId}`,
     PROJECT_TYPE: 'scoped-solutions',
     INVITE_ROLE: 'customer',

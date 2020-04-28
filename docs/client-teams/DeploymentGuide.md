@@ -127,17 +127,17 @@ You should use your ngrok domain instead of `NGROK_OR_CUSTOM_URL` for local depl
 
 1. In `Messaging endpoint` provide value `NGROKOR_CUSTOM_URL/client-teams/events`
 
-**NOTE** Steps 11, 12 and 13 may not be needed if you just upload `manifest.zip`
+**NOTE** Steps below for adding commands may not be needed if you just upload `manifest.zip`
 
 2. Click `Add` in `Commands`. Provide values, command text as `request`, Help text `Send a project description message`. Scope all 3 and click `Save`
 
 ![](../images/teams/command.png)
 
-3. Repeat step 11 for `email` command. Provide values, command text as `email`, Help text `Provide an email id to invite to project`. Scope all 3 and click `Save`
+3. Repeat above step for `email` command. Provide values, command text as `email`, Help text `Provide an email id to invite to project`. Scope all 3 and click `Save`
 
 ![](../images/teams/email.png)
 
-4. Repeat step 11 for `help` command. Provide values, command text as `help`, Help text `Show supported commands`. Scope all 3 and click `Save`
+4. Repeat above step for `help` command. Provide values, command text as `help`, Help text `Show supported commands`. Scope all 3 and click `Save`
 
 5. Click `Finish` -> `Test and distribute` -> `Download`. Save the zip file
 
