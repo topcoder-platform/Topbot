@@ -4,204 +4,204 @@
 
 1. Node.js >= v12.14.1
 
-2. ngrok: https://ngrok.com/download
+2. ngrok for local development: https://ngrok.com/download
 
-## Dynamodb & SNS setup
+## Setup
 
+1. Install `serverless` globally with the command `npm i -g serverless`
+
+## Configure and deploy Slack bots
+
+### Build the project
+1. In the root directory run `npm i` to install required modules
+
+2. [Optional] Check for lint errors by running `npm run lint`. Fix any errors by running `npm run lint:fix`
+
+### Stage and environment files
+You must use the 'local' stage  for local development. The environment file called '.env.local' will be used.
+You should enter all required parameters in this files. Don't change any values in serverless.xml.
+
+### Configure Dynamodb
 Topbot uses Dynamodb to store/retrieve data and listens to SNS topics to obtain events from Topbot - Receiver.
 
-If you already have dynamodb running, then you can skip the install and run steps 1 and 2
+If you already have DynamoDB running, then you can skip the install and run steps 1 and 2.
 
 1. To install DynamoDB locally run `sls dynamodb install`.
 
 2. To start DynamoDB run `sls dynamodb start --migrate`. This will automatically create tables and starts dynamodb on port 8000 by default.
 
-3. **ENV** Update `provider:environment:DYNAMODB_ENDPOINT` field in `serverless.yml` with the dynamodb port
+3. **ENV** Update `DYNAMODB_ENDPOINT` field in the env file with the dynamodb port
 
-```yml
-environment:
-  # AWS configuration
-  ACCESS_KEY_ID: DEFAULT_ACCESS_KEY
-  SECRET_ACCESS_KEY: DEFAULT_SECRET
-  REGION: FAKE_REGION
-  DYNAMODB_ENDPOINT: http://localhost:8000 # This value
+    ```
+      DYNAMODB_ENDPOINT: http://localhost:8000 # This value
+    ```
+4. [Optional] You can view the contents of dynamodb in your browser using a tool like [dynamodb-admin](https://www.npmjs.com/package/dynamodb-admin)
+
+#### Configure SNS Endpoints
+1. `serverless-offline-sns` will run a SNS instance locally.
+
+Update `SNS_ENDPOINT_HOST` and `SNS_ENDPOINT_PORT` with this value.
+
 ```
-
-4. `serverless-offline-sns` will run a SNS instance locally.
-
-**ENV** Update `custom:serverless-offline-sns:sns-endpoint` field in `serverless.yml` with the SNS port
-
-```yml
-serverless-offline-sns:
-  port: 4000 # This value
-  debug: false
-```
-
-Update `provider:environment:SNS_ENDPOINT` with this value.
-
-```yml
-environment:
   # SNS Configuration
-  SNS_ENDPOINT: http://localhost:4000 # This value should be identical with the value in `serverless-offline-sns`
-  SNS_REGION: us-west-2
-  SNS_ACCOUNT_ID: 123456789012 # Dummy value in local setup
+  SNS_ENDPOINT_PORT=4000
+  SNS_ENDPOINT_HOST=http://localhost
 ```
 
-The other SNS config values can be set the same unless you explicitly change it in SNS.
+   The other SNS config values can be set the same unless you explicitly change it in SNS.
 
-5. [Optional] You can view the contents of dynamodb in your browser using a tool like [dynamodb-admin](https://www.npmjs.com/package/dynamodb-admin)
+### TC Slack bot parameters
+You must set the TC Slack parameters in serverless.xml before deploying.
+Go to TC Slack Deployment Guide to find how get these values and updates `serverless.xml`.
+You need only the section:
+- [`Pre Deployment Configuration`](./tc-slack/DeploymentGuide.md)
 
-## Create a free Slack account - This will be your Topcoder slack
+We'll continue configuring TC Slack after deploying in AWS Account.
 
-1. Create a slack account if you don't have one already. Click `Create a new workspace` [here](https://slack.com/get-started).
+### Client Slack bot parameters
+You must set the Client Slack parameters in serverless.xml before deploying if you want to use Client Slack bot.
+Go to Client Slack Deployment Guide to find how get these values and updates `serverless.xml`.
+You need to do only this section.
+- [`Pre Deployment Configuration`](./client-slack/DeploymentGuide.md)
 
-2. Provide an email address and click confirm
+We'll continue configuring Client Slack after deploying in AWS Account.
 
-3. A verification code will be sent to your email, post the verification code back to the slack setup page
+### MS Teams bot parameters
+You must set the MS Teams parameters in serverless.xml before deploying if you want to use MS Team bot.
+Go to MS Teams Deployment Guide to find how get these values and updates `serverless.xml`.
+You need to do only this section.
+- [`Pre Deployment Configuration`](./client-teams/DeploymentGuide.md)
 
-4. Create a team and a project
+We'll continue configuring Client MS Team after deploying in AWS Account.
 
-5. Click `Skip for now` if you don't want to add more users
+### Deploying locally
+1. In the directory run `sls offline` to start the Serverless API gateway on port 3000. The gateway runs the lambda functions on demand.
+You shouls see the output:
+```
+> serverless offline
 
-![](images/skip.png)
+Serverless: INFO[serverless-offline-sns]: Creating topic: "tc-slack-events" for fn "tc_slack_sns_events"
+Serverless: INFO[serverless-offline-sns]: Creating topic: "tc-slack-interactive" for fn "tc_slack_sns_interactive"
+Serverless: INFO[serverless-offline-sns]: Creating topic: "client-slack-events" for fn "client_slack_sns_events"
+Serverless: INFO[serverless-offline-sns]: Creating topic: "client-slack-interactive" for fn "client_slack_sns_interactive"
+Serverless: INFO[serverless-offline-sns]: Creating topic: "client-teams-events" for fn "client_teams_sns_events"
+Serverless: Starting Offline: local/us-east-1.
 
-6. You should see your team and your channel created
+Serverless: Routes for tc_slack_events:
+Serverless: POST /tc-slack/events
+Serverless: POST /{apiVersion}/functions/BotLambda-local-tc_slack_events/invocations
 
-![](images/created.png)
+Serverless: Routes for tc_slack_interactive:
+Serverless: POST /tc-slack/interactive
+Serverless: POST /{apiVersion}/functions/BotLambda-local-tc_slack_interactive/invocations
 
-**ENV** In the list of Channels in your workspace, pick one and provide its name in the `provider:environment:CHANNEL` field in `serverless.yml`. This will be the channel to which new task requests will be posted
+Serverless: Routes for client_slack_events:
+Serverless: POST /client-slack/events
+Serverless: POST /{apiVersion}/functions/BotLambda-local-client_slack_events/invocations
 
-## Create a Slack App
+Serverless: Routes for client_slack_interactive:
+Serverless: POST /client-slack/interactive
+Serverless: POST /{apiVersion}/functions/BotLambda-local-client_slack_interactive/invocations
 
-1. Open the create app page, click [here](https://api.slack.com/apps?new_app=1)
+Serverless: Routes for tc_slack_request:
+Serverless: POST /tc-slack/request
+Serverless: POST /{apiVersion}/functions/BotLambda-local-tc_slack_request/invocations
 
-2. Provide a name and select a workspace
+Serverless: Routes for tc_slack_sns_events:
+Serverless: POST /{apiVersion}/functions/BotLambda-local-tc_slack_sns_events/invocations
 
-![](images/create_app.png)
+Serverless: Routes for tc_slack_sns_interactive:
+Serverless: POST /{apiVersion}/functions/BotLambda-local-tc_slack_sns_interactive/invocations
 
-3. **ENV** Go to app credentials from `Settings` -> `Basic Information`. Get the value of `Signing Secret` and provide it in `provider:environment:CLIENT_SIGNING_SECRET` field in `serverless.yml`
+Serverless: Routes for tc_slack_accept:
+Serverless: POST /tc-slack/accept
+Serverless: POST /{apiVersion}/functions/BotLambda-local-tc_slack_accept/invocations
 
-![](images/credentials.png)
+Serverless: Routes for tc_slack_decline:
+Serverless: POST /tc-slack/decline
+Serverless: POST /{apiVersion}/functions/BotLambda-local-tc_slack_decline/invocations
 
-4. Click on `Features` -> `Bot users` -> `Add a Bot User`. Provide a name say, `topbot` and click `Add Bot User`
+Serverless: Routes for tc_slack_invite:
+Serverless: POST /tc-slack/invite
+Serverless: POST /{apiVersion}/functions/BotLambda-local-tc_slack_invite/invocations
 
-![](images/add_bot_user.png)
+Serverless: Routes for client_slack_sns_events:
+Serverless: POST /{apiVersion}/functions/BotLambda-local-client_slack_sns_events/invocations
 
-5. Click on `Features` -> `OAuth & Permissions` -> `Install App to Workspace`
+Serverless: Routes for client_slack_sns_interactive:
+Serverless: POST /{apiVersion}/functions/BotLambda-local-client_slack_sns_interactive/invocations
 
-![](images/install.png)
+Serverless: Routes for client_slack_response:
+Serverless: POST /client-slack/response
+Serverless: POST /{apiVersion}/functions/BotLambda-local-client_slack_response/invocations
 
-6. Click `Allow`
+Serverless: Routes for client_slack_approve:
+Serverless: POST /client-slack/approve
+Serverless: POST /{apiVersion}/functions/BotLambda-local-client_slack_approve/invocations
 
-![](images/allow.png)
+Serverless: Routes for client_slack_signIn:
+Serverless: GET /client-slack/signin
+Serverless: POST /{apiVersion}/functions/BotLambda-local-client_slack_signIn/invocations
 
-7. On the same page, go to `Scopes` -> `Select Permission Scopes` -> Add scope `bot` and `channels:write`  and click `Save changes`. Reinstall the app by clicking the link on the top banner.
+Serverless: Routes for client_slack_auth:
+Serverless: GET /client-slack/auth/redirect
+Serverless: POST /{apiVersion}/functions/BotLambda-local-client_slack_auth/invocations
 
-![](images/scopes.png)
+Serverless: Routes for client_teams_events:
+Serverless: POST /client-teams/events
+Serverless: POST /{apiVersion}/functions/BotLambda-local-client_teams_events/invocations
 
-![](images/reinstall.png)
+Serverless: Routes for client_teams_sns_events:
+Serverless: POST /{apiVersion}/functions/BotLambda-local-client_teams_sns_events/invocations
 
-8. **ENV** On success, you will see your `OAuth Access Token` and
- `Bot User OAuth Access Token` in `OAuth Tokens & Redirect URLs`.
+Serverless: Routes for client_teams_response:
+Serverless: POST /client-teams/response
+Serverless: POST /{apiVersion}/functions/BotLambda-local-client_teams_response/invocations
 
- Copy `OAuth Access Token` and provide it in `provider:environment:ADMIN_USER_TOKEN` field in `serverless.yml`.
+Serverless: Routes for client_teams_approve:
+Serverless: POST /client-teams/approve
+Serverless: POST /{apiVersion}/functions/BotLambda-local-client_teams_approve/invocations
 
- Copy `Bot User OAuth Access Token` and provide it in `provider:environment:BOT_TOKEN` field in `serverless.yml`.
-
-9. **ENV** Central TC needs to communicate with Slack lambda. Set the URI of Slack lambda in the `provider:environment:SLACK_LAMBDA_URI` field in `serverless.yml`. You can deploy Slack lambda at this port later after TC central is deployed.
-
- By default, Slack lambda runs on port 3001. So if you are using defaults, you don't need to change this field.
-
-10. **ENV** Central TC needs to communicate with Slack lambda. Set the URI of Teams lambda in the `provider:environment:TEAMS_LAMBDA_URI` field in `serverless.yml`. You can deploy Teams lambda at this port later after TC central is deployed.
-
- By default, Teams lambda runs on port 3002. So if you are using defaults, you don't need to change this field.
-
-11. **ENV** Provide conect bearer token in `serverless.yml` -> `provider:environment:CONNECT_BEARER_TOKEN`
-
-12. All the required environment values in `serverless.yml` should be filled now. It should look something like,
-
-```yml
-service: centralBotLambda
-
-provider:
-  name: aws
-  runtime: nodejs10.x
-  profile: bot-dev
-  stage: local
-
-  environment:
-    # AWS configuration
-    ACCESS_KEY_ID: FAKE_ACCESS_KEY_ID
-    SECRET_ACCESS_KEY: FAKE_SECRET_ACCESS_KEY
-    REGION: FAKE_REGION
-    DYNAMODB_ENDPOINT: http://localhost:8000
-
-    # TC Slack bot configuration
-    ADMIN_USER_TOKEN: xoxp-755656631591-747386116513-856432302385-bbe6afecbaa9410f2630e45908b5e498
-    BOT_TOKEN: xoxb-755656631591-802800975089-M6OZs1GH4HlF16PuZsgfHVQ1
-    CHANNEL: general
-    CLIENT_SIGNING_SECRET: 49162bd8ebe79a8f64a9a29332e22c74
-
-    # Slack Lambda configuration
-    SLACK_LAMBDA_URI: 'http://localhost:3001'
-
-    # Teams lambda configuration
-    TEAMS_LAMBDA_URI: 'http://localhost:3002'
-
-    # Topcoder connect configuration
-    CONNECT_BEARER_TOKEN: sample_connect_bearer_tokeniJKV1QiLCJhbGciOiJI.eyJyb2xlcyI6WyJUb3Bjb2RlciBVc2VyIl0sImlzcyI6Imh0dHBzOi8vYXBpLnRvcGNvZGVyLWRldi5jb20iLsample_connect_bearer_tokenIiwiZXhwIjoxNTsample_connect_bearer_tokenQiOiI0MDE1Osample_connect_bearer_tokenMTU3NTUxMTk3NywiZW1haWwiOiJiaWxsc2Vksample_connect_bearer_token.-ZJHFCqxgvdCeyx9sample_connect_bearer_tokenCk
+Serverless: Offline [HTTP] listening on http://localhost:3000
+Serverless: Enter "rp" to replay the last request
 ```
 
-## Start Central TC server
+2. You can verify this using the aws cli `aws --endpoint-url=http://localhost:4000 sns list-topics`.
+```
+aws --endpoint-url=http://localhost:4000 sns list-topics
+{
+    "Topics": [
+        {
+            "TopicArn": "arn:aws:sns:us-east-1:123456789012:tc-slack-events"
+        },
+        {
+            "TopicArn": "arn:aws:sns:us-east-1:123456789012:tc-slack-interactive"
+        },
+        {
+            "TopicArn": "arn:aws:sns:us-east-1:123456789012:client-slack-events"
+        },
+        {
+            "TopicArn": "arn:aws:sns:us-east-1:123456789012:client-slack-interactive"
+        },
+        {
+            "TopicArn": "arn:aws:sns:us-east-1:123456789012:client-teams-events"
+        }
+    ]
+}
 
-1. Install `serverless` globally. `npm i -g serverless`
+```
 
-2. In the `Topbot` directory run `npm i` to install required modules
+3. Expose the server using `ngrok`. Run `ngrok http 3000`. You will obtain a url like `https://bba62ba4.ngrok.io`. Note down this value. I will refer to it as `NGROK_OR_CUSTOM_URL`.
 
-3. [Optional] Check for lint errors by running `npm run lint`. Fix any errors by running `npm run lint:fix`
+4. Need to complete the configuration
 
-4. In the `Topbot` directory run `serverless offline` to start the Serverless API gateway on port 3000. The gateway runs the lambda functions on demand.
+    Go to TC Slack Deployment Guide to complete the configuration:
+    - ['Post Deployment Configuration' section](./tc-slack/DeploymentGuide.md)
 
-5. You should see that the SNS topics, `tc-slack-events` and `tc-slack-interactive` are created. You can verify this using the aws cli,
-`aws --endpoint-url=http://localhost:4000 sns list-topics`
+    Go to Client Slack Deployment Guide to complete the configuration:
+    - ['Post Deployment Configuration' section](./client-slack/DeploymentGuide.md)
 
-6. Expose the server using `ngrok`. Run `ngrok http 3000`. You will obtain a url like `https://bba62ba4.ngrok.io`. Note down this value. I will refer to it as `NGROK_URL`.
+    Go to Client MS Teams Deployment Guide to complete the configuration:
+    - ['Post Deployment Configuration'](./client-teams/DeploymentGuide.md)
 
-**NOTE on ngrok**
-
-If you are using a free version of ngrok, it allows only one simultaneous connection. This is a problem if you want to run both Slack lambda and TC Central and expose both using ngrok.
-
-The solution is to use the `--region` field while starting ngrok. So, if you're already running ngrok, you will see a region such as `Region United States (us)` in the terminal.
-To start another ngrok session just choose another region to run in by executing `ngrok http 3001 --region au`. This will start ngrok in `Region Australia (au)`
-
-## Enable event subscriptions in Slack app
-
-1. Go to https://api.slack.com/apps and click on the app that you created earlier in `Create a Slack App`
-
-2. Click on `Features` -> `Event Subscriptions`. Turn it on.
-
-3. Go to `Subscribe to Bot Events` section and add `app_mention` event. (See the image below)
-
-4. Scroll up and provide a `Request URL`. Provide value `NGROK_URL/slack/events` and click `Save changes` once verified.
-
-![](images/events.png)
-
-## Enable interactive components in Slack app
-
-1. Go to https://api.slack.com/apps and click on the app that you created earlier in `Create a Slack App`
-
-2. Click on `Features` -> `Interactive Components`. Turn it on and fill in `NGROK_URL/slack/interactive` into the `Request URL` field. Click Save changes.
-
-![](images/interactive.png)
-
-## Setup slack workspace
-
-1. Invite the bot user `/invite @topbot` to the channel that you configured earlier in the `provider:environment:CHANNEL` field in `serverless.yml`
-
-## Setup Slack lambda
-
-If you haven't already done it, then setup Slack lambda by following its `DeploymentGuide.md` before moving on to [Verification Guide](./VerificationGuide.md). Note that if you change the port of Slack lambda, then you need to update `provider:environment:SLACK_LAMBDA_URI` field in `serverless.yml` **and restart** TC Central lambda.
-
-## Setup Teams lambda
-
-If you haven't already done it, then setup Teams lambda by following its `DeploymentGuide.md` before moving on to [Verification Guide](./VerificationGuide.md). Note that if you change the port of Teams lambda, then you need to update `provider:environment:TEAMS_LAMBDA_URI` field in `serverless.yml` **and restart** TC Central lambda.
+Configuration completed. Go to verification steps.

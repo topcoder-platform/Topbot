@@ -11,12 +11,15 @@ let documentClient = null
  * Create tasks table and initialize DocumentClient
  */
 async function initialize () {
-  AWS.config.update({
+  const config = {
     region: process.env.REGION,
     accessKeyId: process.env.ACCESS_KEY_ID,
-    secretAccessKey: process.env.SECRET_ACCESS_KEY,
-    endpoint: process.env.DYNAMODB_ENDPOINT
-  })
+    secretAccessKey: process.env.SECRET_ACCESS_KEY
+  }
+  if (process.env.IS_OFFLINE) {
+    config.endpoint = process.env.DYNAMODB_ENDPOINT
+  }
+  AWS.config.update(config)
 
   documentClient = new AWS.DynamoDB.DocumentClient()
 }
@@ -118,6 +121,50 @@ async function getProject (projectId) {
   })).Items[0])
 }
 
+/**
+ * Get project by the thread that it was launched in by the client
+ * @param {String} clientSlackThread
+ */
+async function getProjectByClientSlackThread (clientSlackThread) {
+  return ((await query({
+    TableName: config.get('DYNAMODB.PROJECT_TABLE_NAME'),
+    IndexName: config.get('DYNAMODB.CLIENT_SLACK_THREAD_INDEX'),
+    KeyConditionExpression: 'clientSlackThread = :c',
+    ExpressionAttributeValues: {
+      ':c': clientSlackThread
+    }
+  })).Items[0])
+}
+
+/**
+ * Returns the client by team id
+ * @param {String} teamId
+ */
+async function getClientByTeamId (teamId) {
+  return ((await query({
+    TableName: config.get('DYNAMODB.SLACK_CLIENTS_TABLE_NAME'),
+    KeyConditionExpression: 'teamId = :teamIdVal',
+    ExpressionAttributeValues: {
+      ':teamIdVal': teamId
+    }
+  })).Items[0])
+}
+
+/**
+ * Get project by the teams conversation id that it was launched in by the client
+ * @param {String} teamsConversationId
+ */
+async function getProjectByTeamsConversationId (teamsConversationId) {
+  return ((await query({
+    TableName: config.get('DYNAMODB.PROJECT_TABLE_NAME'),
+    IndexName: config.get('DYNAMODB.TEAMS_CONVERSATION_ID_INDEX'),
+    KeyConditionExpression: 'teamsConversationId = :t',
+    ExpressionAttributeValues: {
+      ':t': teamsConversationId
+    }
+  })).Items[0])
+}
+
 module.exports = {
   initialize,
   put,
@@ -125,5 +172,8 @@ module.exports = {
   update,
   updateProjectStatus,
   getProject,
-  updateProjectWithConnectAndApprove
+  updateProjectWithConnectAndApprove,
+  getProjectByClientSlackThread,
+  getClientByTeamId,
+  getProjectByTeamsConversationId
 }

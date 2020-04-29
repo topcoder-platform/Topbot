@@ -1,4 +1,4 @@
-# Topbot - Central TC Lambda
+# Topbots
 
 ## Overview
 
@@ -8,7 +8,9 @@ Central TC acts as a bridge between TC Slack and Client Slack Lambda or Client M
 
 ## Deployment Guide
 
-Follow instructions in [Deployment Guide](docs/DeploymentGuide.md)
+Follow instructions in [Deployment Guide](docs/DeploymentGuide.md) to deploy locally.
+
+Follow instructions in [Deployment Guide With Custom Domain](docs/DeploymentGuideWithCustomDomain.md) to deploy in AWS Account.
 
 ## Verification Guide
 
@@ -16,7 +18,11 @@ Follow instructions in [Verification Guide](docs/VerificationGuide.md)
 
 ## Swagger documentation
 
-REST API's are documented in [swagger.yaml](docs/swagger/swagger.yaml)
+TC Slack REST API's are documented in [swagger.yaml](docs/tc-slack/swagger/swagger.yaml)
+
+Client Slack REST API's are documented in [swagger.yaml](docs/client-slack/swagger/swagger.yaml)
+
+Clinet MS Teams REST API's are documented in [swagger.yaml](docs/client-teams/swagger/swagger.yaml)
 
 ## DynamoDB database description
 
@@ -77,4 +83,3 @@ These operations might take more than 3 seconds at times
 The solution seems to be to have one lambda function call another using something like AWS SNS
 
 See https://stackoverflow.com/questions/31714788/can-an-aws-lambda-function-call-another
-

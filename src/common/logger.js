@@ -48,6 +48,10 @@ if (process.env.NODE_ENV !== 'production') {
  * @param err
  */
 const logFullError = (logger, err) => {
+  if (process.env.CLOUDWATCH_LOGGING_ERRORS) { // Should use console.logger to see errors in AWS CloudWatch
+    console.log(err)
+    return
+  }
   if (err && err.stack) {
     logger.error(err.stack)
   } else {

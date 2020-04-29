@@ -1,0 +1,80 @@
+swagger: "2.0"
+info:
+  description: "REST API definitions for Topbot Slack Lambda"
+  version: "1.0.0"
+  title: "Topbot - Teams Lambda"
+host: "localhost:3002"
+schemes:
+- "http"
+paths:
+  /client-teams/approve:
+    post:
+      tags:
+      - "Approve a project"
+      summary: "Approve a project"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Project id"
+        required: true
+        schema:
+          type: "object"
+          properties:
+            projectId:
+              type: "string"
+              example: "14c83983-58ac-475a-882e-101d47a0e4ec"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad request"
+        500:
+          description: "Internal Server Error"
+  /client-teams/response:
+    post:
+      tags:
+      - "Respond to a project request"
+      summary: "Provide response to a project request"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Project id"
+        required: true
+        schema:
+          type: "object"
+          properties:
+            projectId:
+              type: "string"
+              example: "14c83983-58ac-475a-882e-101d47a0e4ec"
+            text:
+              type: "string"
+              example: "This is my response"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad request"
+        500:
+          description: "Internal Server Error"
+  /client-teams/events:
+    post:
+      tags:
+      - "Teams events"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      summary: "Endpoint for Teams events. MS Teams posts command requests and interactions with UI elements to this endpoint. It is meant to be used only through Teams."
+      responses:
+        200:
+          description: "OK"
+        401:
+          description: "Unauthorized"
