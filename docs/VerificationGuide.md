@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-TC Central, Slack lambda and Teams lambda need to be up and running. They all need to have the endpoint exposed by ngrok.
+TC Central, Slack lambda and Teams lambda need to be up and running. They all need to have the public endpoint.
 
 So you will have three workspaces,
 one where TC Central bot is installed - `Topcoder Workspace`

@@ -1,14 +1,16 @@
-# Topbot - Central TC Lambda
+# Topbots
 
 ## Overview
 
 Central TC acts as a bridge between TC Slack and Client Slack Lambda or Client MS Teams Lambda
 
-![](docs/tc-slack/images/architecture.png)
+![](docs/images/architecture.png)
 
 ## Deployment Guide
 
-Follow instructions in [Deployment Guide](docs/DeploymentGuide.md)
+Follow instructions in [Deployment Guide](docs/DeploymentGuide.md) to deploy locally.
+
+Follow instructions in [Deployment Guide With Custom Domain](docs/DeploymentGuideWithCustomDomain.md) to deploy in AWS Account.
 
 ## Verification Guide
 
@@ -81,4 +83,3 @@ These operations might take more than 3 seconds at times
 The solution seems to be to have one lambda function call another using something like AWS SNS
 
 See https://stackoverflow.com/questions/31714788/can-an-aws-lambda-function-call-another
-

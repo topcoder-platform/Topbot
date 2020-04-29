@@ -5,7 +5,7 @@
 const HttpStatus = require('http-status-codes')
 const rp = require('request-promise')
 const config = require('config')
-const schema = require('../common/schema')
+const schema = require('../../common/schema')
 const { getSlackWebClient } = require('../common/helper')
 const { getProject } = require('../../common/dbHelper')
 const logger = require('../../common/logger')
@@ -37,8 +37,10 @@ module.exports.handler = logger.traceFunction('invite.handler', async event => {
 
     try {
       // Invite member to Connect  project
+      const inviteURI = config.get('CONNECT.INVITE_MEMBER')(project.connectProjectId) + encodeURIComponent(config.get('CONNECT.INVITE_MEMBER_FIELDS'))
+      //console.log('invite URI : ', inviteURI)
       await rp({
-        uri: config.get('CONNECT.INVITE_MEMBER')(project.connectProjectId),
+        uri: inviteURI,
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -52,6 +54,7 @@ module.exports.handler = logger.traceFunction('invite.handler', async event => {
         json: true
       })
     } catch (e) {
+      console.log('error occured : ', e)
       return {
         statusCode: e.statusCode
       }

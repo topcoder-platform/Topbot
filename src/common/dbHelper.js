@@ -11,12 +11,15 @@ let documentClient = null
  * Create tasks table and initialize DocumentClient
  */
 async function initialize () {
-  AWS.config.update({
+  const config = {
     region: process.env.REGION,
     accessKeyId: process.env.ACCESS_KEY_ID,
-    secretAccessKey: process.env.SECRET_ACCESS_KEY,
-    endpoint: process.env.DYNAMODB_ENDPOINT
-  })
+    secretAccessKey: process.env.SECRET_ACCESS_KEY
+  }
+  if (process.env.IS_OFFLINE) {
+    config.endpoint = process.env.DYNAMODB_ENDPOINT
+  }
+  AWS.config.update(config)
 
   documentClient = new AWS.DynamoDB.DocumentClient()
 }
