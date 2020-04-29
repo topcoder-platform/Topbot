@@ -9,8 +9,9 @@ const { put, getClientByTeamId, update } = require('../../common/dbHelper')
 const { encrypt, findValueOfKeyInObject } = require('../common/helper')
 
 module.exports.handler = logger.traceFunction('auth.handler', async (event) => {
-  const redirectUri = `https://${findValueOfKeyInObject(event.headers, 'host')}/client-slack/auth/redirect`
+  const redirectUri = `https://${findValueOfKeyInObject(event.headers, 'host')}${event.path}`
   logger.debug('redirectUri:' + redirectUri)
+  console.log('redirectUri::->' + redirectUri)
   const authCode = event.queryStringParameters.code
   try {
     const response = JSON.parse(await rp({
@@ -18,7 +19,7 @@ module.exports.handler = logger.traceFunction('auth.handler', async (event) => {
       method: 'GET'
     }))
 
-    if (!response.ok) {
+    if (!response.ok) {console.log("ERROR is here")
       logger.logFullError(response)
       return {
         statusCode: HttpStatus.UNAUTHORIZED,

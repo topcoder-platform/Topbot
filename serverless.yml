@@ -268,7 +268,7 @@ plugins:
   - serverless-offline
 
 custom:
-  lambda_uri: ${env:LAMBDA_URL,'https://${self:custom.customDomain.domainName}'}
+  lambda_uri: ${env:LAMBDA_URL,'https://${self:custom.customDomain.domainName}/topbot'}
   serverless-offline-sns:
     port:  ${env:SNS_ENDPOINT_PORT,''}
     debug: false
@@ -284,9 +284,10 @@ custom:
   region: ${opt:region, self:provider.region}
   customDomain:
     domainName: ${env:CUSTOM_DOMAIN_NAME,''}
-    basePath: ''
+    basePath: 'topbot'
     stage: ${self:provider.stage}
     createRoute53Record: true
+    certificateArn: ${env:CUSTOM_DOMAIN_CERTIFICATE_ARN,''}
 resources:
   Resources:
     tcSlackEvents:
@@ -365,11 +366,11 @@ resources:
           - ProjectsTable
           - Arn
       Export:
-        Name: ProjectsTableArn
+        Name: AGProjectsTableArn
     ClientsTableArn:
       Value:
         Fn::GetAtt:
           - ClientsTable
           - Arn
       Export:
-        Name: ClientsTableArn
+        Name: AGClientsTableArn
