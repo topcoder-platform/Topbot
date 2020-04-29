@@ -33,6 +33,10 @@ Go to [Transfer a domain](https://docs.aws.amazon.com/Route53/latest/DeveloperGu
 ## Create/Import SSL/TLS certificate
 Before setting up a custom domain name for an API, you must have an SSL/TLS certificate ready in AWS Certificate Manager.
 The following steps describe how to get this done. <br/>
+
+**If you have a public domain registered already in Route53 you can create a certificate for subdomain directly - 
+for example, we have topcoder-dev.com registered so we are going to go ahead and create a subdomain certificqte for `topbot.topcoder-dev.com` and it works. One doesn't need to register a top level domain again if subdomain is okay.**
+
 To set up the certificate click on [Request a public certificate](https://console.aws.amazon.com/acm/home?region=us-east-1#/wizard/)
 
 ![Request Certificate](./images/request_certificate.png)
@@ -75,6 +79,12 @@ you'll need to specify the certificate name with a certificateName property.
 ```
 CUSTOM_DOMAIN_NAME=atme.link
 CUSTOM_DOMAIN_CERTIFICATE_NAME=
+```
+
+Option 2 - you can also put certificate arn along with name, make sure you have respective variable defined in `.env.dev` and `serverless.yml`
+```
+CUSTOM_DOMAIN_NAME=atme.link
+CUSTOM_DOMAIN_CERTIFICATE_ARN=
 ```
 
 2. Create your custom domain with a single command:
