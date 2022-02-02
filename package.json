@@ -20,7 +20,7 @@
     "raw-body": "^2.3.3",
     "request": "^2.79.0",
     "uuid": "^3.3.2",
-    "winston": "^3.2.1"
+    "winston": "^3.4.0"
   },
   "devDependencies": {
     "eslint": "^5.16.0"
